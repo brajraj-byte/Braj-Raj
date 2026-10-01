@@ -1,15 +1,32 @@
-import { useState } from "react";
-import { fileUrl } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { fileUrl, api, apiError } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import CandidateDetailDialog from "@/components/CandidateDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, User, Eye } from "lucide-react";
+import { Download, User, Eye, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-export default function CandidateTable({ candidates, emptyText = "No candidates yet." }) {
+export default function CandidateTable({ candidates, emptyText = "No candidates yet.", onChanged }) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [selected, setSelected] = useState(null);
   const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState(candidates || []);
 
-  if (!candidates || candidates.length === 0)
+  useEffect(() => { setRows(candidates || []); }, [candidates]);
+
+  const remove = async (c) => {
+    if (!window.confirm(`Delete ${c.name || "this candidate"} from the database? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/resumes/${c.id}`);
+      setRows((prev) => prev.filter((r) => r.id !== c.id));
+      toast.success("Candidate deleted");
+      onChanged?.();
+    } catch (ex) { toast.error(apiError(ex)); }
+  };
+
+  if (!rows || rows.length === 0)
     return <div className="text-center py-16 text-slate-400 text-sm" data-testid="candidate-table-empty">{emptyText}</div>;
 
   return (
@@ -28,7 +45,7 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
             </tr>
           </thead>
           <tbody>
-            {candidates.map((c) => (
+            {rows.map((c) => (
               <tr key={c.id} className="border-t border-slate-100 hover:bg-orange-50/40 transition-colors" data-testid={`candidate-row-${c.id}`}>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
@@ -57,6 +74,11 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
                       <a href={fileUrl(c.resume_path)} target="_blank" rel="noreferrer" download data-testid={`candidate-download-${c.id}`}>
                         <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white"><Download className="h-3.5 w-3.5" /></Button>
                       </a>
+                    )}
+                    {isAdmin && (
+                      <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => remove(c)} data-testid={`candidate-delete-${c.id}`}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     )}
                   </div>
                 </td>

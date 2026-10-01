@@ -360,8 +360,8 @@ async def update_features(payload: dict, user: dict = Depends(current_user)):
 @api.post("/resumes/parse")
 async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(current_user)):
     ext = (file.filename.rsplit(".", 1)[-1] if "." in file.filename else "bin").lower()
-    if ext not in ("pdf", "docx", "doc"):
-        raise HTTPException(status_code=400, detail="Only PDF and DOCX resumes are supported")
+    if ext not in ("pdf", "docx", "doc", "txt", "html", "htm"):
+        raise HTTPException(status_code=400, detail="Supported formats: PDF, DOC, DOCX, TXT, HTML")
     data = await file.read()
 
     resume_path = f"{APP_NAME}/resumes/{user['id']}/{uuid.uuid4()}.{ext}"
@@ -444,7 +444,10 @@ async def get_resume(cid: str, user: dict = Depends(current_user)):
 
 @api.delete("/resumes/{cid}")
 async def delete_resume(cid: str, user: dict = Depends(current_user)):
-    await db.candidates.update_one({"id": cid}, {"$set": {"is_deleted": True}})
+    require_admin(user)
+    res = await db.candidates.update_one({"id": cid, "is_deleted": {"$ne": True}}, {"$set": {"is_deleted": True}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Candidate not found")
     return {"success": True}
 
 

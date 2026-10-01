@@ -29,6 +29,44 @@ def _docx_to_text(path: str) -> str:
     return "\n".join(parts)
 
 
+def _html_to_text(raw: str) -> str:
+    from html.parser import HTMLParser
+
+    class _TextExtractor(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.skip = 0
+            self.parts = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style"):
+                self.skip += 1
+
+        def handle_endtag(self, tag):
+            if tag in ("script", "style") and self.skip:
+                self.skip -= 1
+
+        def handle_data(self, data):
+            if not self.skip and data.strip():
+                self.parts.append(data.strip())
+
+    p = _TextExtractor()
+    p.feed(raw)
+    return "\n".join(p.parts)
+
+
+def _extract_text(path: str, ext: str, file_bytes: bytes) -> str:
+    if ext in ("docx", "doc"):
+        try:
+            return _docx_to_text(path)
+        except Exception:
+            return file_bytes.decode("utf-8", "ignore")
+    raw = file_bytes.decode("utf-8", "ignore")
+    if ext in ("html", "htm"):
+        return _html_to_text(raw)
+    return raw
+
+
 def _prompt() -> str:
     return (
         "Parse this resume and return a JSON object with EXACTLY these keys: "
@@ -73,7 +111,7 @@ async def parse_resume(file_bytes: bytes, ext: str) -> dict:
             file_content = FileContentWithMimeType(file_path=tmp.name, mime_type="application/pdf")
             msg = UserMessage(text=_prompt(), file_contents=[file_content])
         else:
-            text = _docx_to_text(tmp.name) if ext in ("docx", "doc") else file_bytes.decode("utf-8", "ignore")
+            text = _extract_text(tmp.name, ext, file_bytes)
             msg = UserMessage(text=_prompt() + "\n\nRESUME TEXT:\n" + text[:20000])
         resp = await chat.send_message(msg)
     finally:

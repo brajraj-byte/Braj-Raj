@@ -42,7 +42,7 @@ export default function ParseResume() {
     <div className="space-y-6 animate-fade-up">
       <div>
         <h2 className="font-heading text-2xl font-bold text-slate-900">Parse Resume</h2>
-        <p className="text-sm text-slate-500">Upload a PDF or DOCX resume — AI extracts all candidate details into the shared database.</p>
+        <p className="text-sm text-slate-500">Upload a PDF, DOC, DOCX, TXT or HTML resume — AI extracts all candidate details into the shared database.</p>
       </div>
 
       <Card className="p-6">
@@ -59,9 +59,9 @@ export default function ParseResume() {
               <FileText className="h-4 w-4 text-orange-500" /> <span className="font-medium">{file.name}</span>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Drag & drop a resume here, or click to browse (PDF / DOCX)</p>
+            <p className="text-sm text-slate-500">Drag & drop a resume here, or click to browse (PDF / DOC / DOCX / TXT / HTML)</p>
           )}
-          <input id="resume-file" type="file" accept=".pdf,.docx,.doc" className="hidden"
+          <input id="resume-file" type="file" accept=".pdf,.doc,.docx,.txt,.html,.htm" className="hidden"
             onChange={(e) => onFiles(e.target.files)} data-testid="resume-file-input" />
           <label htmlFor="resume-file">
             <span className="inline-block mt-4 text-sm font-semibold text-orange-600 cursor-pointer hover:underline">Choose file</span>
