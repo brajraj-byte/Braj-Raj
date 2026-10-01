@@ -1,0 +1,22 @@
+{
+  "summary": "Owner email config change verified. Admin login with braj.raj@careerbuddha.in / CareerBuddha@2026 succeeds and /api/auth/me returns {email: braj.raj@careerbuddha.in, role: admin}. Old gmail brajraj.2505@gmail.com: login rejected, not in /api/admin/members list, and not present in any Mongo users/members/admin collections. Core regression endpoints healthy: /api/features, /api/admin/members (5 team members, no gmail), /api/celebrations, /api/chat/presence (self=true for admin), /api/mail/sent, /api/mail/send auth all 200. New pytest file /app/backend/tests/test_owner_email_change.py — 10/10 PASS. Frontend smoke (REACT_APP_BACKEND_URL): admin logs in, dashboard renders with 'Braj Raj / Admin' in header, all 10 tabs visible (Parse Resume, Candidate Database, Client Details, Business Development, Joining Details, Job Tracking, Search, Celebrations, Mail, Admin Console); no 'brajraj.2505' text appears on page.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_owner_email_change.py",
+    "/app/test_reports/pytest/owner_email_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py now >1080 lines — still above recommended module-split threshold.",
+    "/api/admin/members excludes the admin itself; UI should surface admin identity via /api/auth/me only (current behaviour is consistent)."
+  ],
+  "updated_files": ["/app/backend/tests/test_owner_email_change.py (new)"],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100%"},
+  "test_credentials": "Admin: braj.raj@careerbuddha.in / CareerBuddha@2026 (must_change_password=false, already changed in prior iteration).",
+  "seed_data_creation": "None; tests are read-only + login only.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "OWNER_GOOGLE_EMAIL and ADMIN_EMAIL are both braj.raj@careerbuddha.in. No brajraj.2505@gmail.com records exist in DB or endpoints. test_owner_email_change.py runs standalone with -n 0 in ~1.5s. Prior test files (test_chat_mail, test_ddmm_invite, test_regression, backend_test) remain usable for broader regression.",
+  "rca of the issue": "n/a — config change verification, no bugs found."
+}
