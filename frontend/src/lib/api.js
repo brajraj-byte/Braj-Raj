@@ -30,6 +30,12 @@ export function resumeDownloadName(c) {
   return `${safe}.${ext}`;
 }
 
+export function externalUrl(u) {
+  if (!u) return "";
+  const s = u.toString().trim();
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+}
+
 export function apiError(e) {
   const d = e?.response?.data?.detail;
   if (d == null) return e?.message || "Something went wrong.";

@@ -1,4 +1,4 @@
-import { fileUrl, resumeDownloadName } from "@/lib/api";
+import { fileUrl, resumeDownloadName, externalUrl } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +56,18 @@ export default function CandidateDetailDialog({ candidate, open, onOpenChange })
           <Field icon={Briefcase} label="CTC" value={c.ctc} />
           <Field icon={Calendar} label="Notice Period" value={c.notice_period} />
           <Field icon={GraduationCap} label="Highest Qualification" value={c.highest_qualification} />
-          <Field icon={Linkedin} label="LinkedIn" value={c.linkedin_url} />
+          <div className="flex items-start gap-2.5">
+            <Linkedin className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold">LinkedIn</p>
+              {c.linkedin_url ? (
+                <a href={externalUrl(c.linkedin_url)} target="_blank" rel="noreferrer"
+                  className="text-sm text-[#0A66C2] hover:underline break-words" data-testid="candidate-linkedin-link">
+                  {c.linkedin_url}
+                </a>
+              ) : <p className="text-sm text-slate-800">—</p>}
+            </div>
+          </div>
           <Field icon={User} label="Parsed By" value={c.parsed_by_name} />
           <Field icon={Calendar} label="Date of Parsing" value={c.date_of_parsing ? new Date(c.date_of_parsing).toLocaleString() : "—"} />
         </div>

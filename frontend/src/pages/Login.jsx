@@ -39,7 +39,7 @@ export default function Login() {
         </div>
         <div className="relative z-10 space-y-4">
           <h1 className="font-heading text-4xl font-extrabold leading-tight">
-            Recruitment, intervened powerfully.
+            One suite for your entire recruitment desk.
           </h1>
           <p className="text-orange-50 text-base max-w-md">
             Parse resumes with AI, build a shared candidate database, track clients, business
@@ -55,7 +55,7 @@ export default function Login() {
           <div className="lg:hidden mb-4"><Logo /></div>
           <div>
             <h2 className="font-heading text-2xl font-bold text-slate-900">Welcome back</h2>
-            <p className="text-sm text-slate-500 mt-1">Sign in to your Career Buddha console.</p>
+            <p className="text-sm text-slate-500 mt-1">Sign in to your Career Buddha 360 Suite console.</p>
           </div>
 
           {err && (

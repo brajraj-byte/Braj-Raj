@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { fileUrl, api, apiError, resumeDownloadName } from "@/lib/api";
+import { fileUrl, api, apiError, resumeDownloadName, externalUrl } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import CandidateDetailDialog from "@/components/CandidateDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, User, Eye, Trash2 } from "lucide-react";
+import { Download, User, Eye, Trash2, Linkedin } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CandidateTable({ candidates, emptyText = "No candidates yet.", onChanged }) {
@@ -73,6 +73,11 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
                     <Button size="sm" variant="outline" onClick={() => { setSelected(c); setOpen(true); }} data-testid={`candidate-view-${c.id}`}>
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
+                    {c.linkedin_url && (
+                      <a href={externalUrl(c.linkedin_url)} target="_blank" rel="noreferrer" data-testid={`candidate-linkedin-${c.id}`}>
+                        <Button size="sm" variant="outline" className="text-[#0A66C2] border-[#0A66C2]/30 hover:bg-[#0A66C2]/5"><Linkedin className="h-3.5 w-3.5" /></Button>
+                      </a>
+                    )}
                     {c.resume_path && (
                       <a href={fileUrl(c.resume_path, resumeDownloadName(c))} download={resumeDownloadName(c)} data-testid={`candidate-download-${c.id}`}>
                         <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white"><Download className="h-3.5 w-3.5" /></Button>

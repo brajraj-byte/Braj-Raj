@@ -11,7 +11,7 @@ logger = logging.getLogger("careerbuddha.email")
 
 EMAIL_BASE_URL = "https://integrations.emergentagent.com"
 EMAIL_KEY = os.environ.get("EMERGENT_EMAIL_KEY")
-EMAIL_FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "Career Buddha")
+EMAIL_FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "Career Buddha 360 Suite")
 EMAIL_REPLY_TO = os.environ.get("EMAIL_REPLY_TO")
 
 _SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "goo.gl", "rebrand.ly")
@@ -119,10 +119,10 @@ def invite_email_html(name: str, invite_url: str) -> str:
         'border-radius:14px;font-family:Arial,Helvetica,sans-serif">'
         '<tr><td style="padding:28px 32px">'
         '<p style="font-size:20px;font-weight:800;color:#ea580c;margin:0 0 4px">Career Buddha</p>'
-        '<p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f97316;margin:0 0 20px">Powerful Intervention</p>'
+        '<p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f97316;margin:0 0 20px">360 Suite</p>'
         f'<p style="font-size:15px;color:#0f172a;margin:0 0 12px">Hi {safe_name},</p>'
         '<p style="font-size:14px;color:#334155;line-height:1.6;margin:0 0 20px">'
-        'You have been invited to join the Career Buddha recruitment console. '
+        'You have been invited to join the Career Buddha 360 Suite recruitment console. '
         'Click the button below to set your password and activate your account.</p>'
         f'<a href="{safe_url}" style="display:inline-block;background:#ea580c;color:#ffffff;'
         'text-decoration:none;font-weight:700;font-size:14px;padding:12px 24px;border-radius:8px">'
@@ -130,7 +130,7 @@ def invite_email_html(name: str, invite_url: str) -> str:
         '<p style="font-size:12px;color:#64748b;line-height:1.6;margin:20px 0 0">'
         'If the button does not work, copy this link into your browser:<br>'
         f'<span style="color:#ea580c">{safe_url}</span></p>'
-        '<p style="font-size:11px;color:#94a3b8;margin:24px 0 0">Sent by Career Buddha. '
+        '<p style="font-size:11px;color:#94a3b8;margin:24px 0 0">Sent by Career Buddha 360 Suite. '
         'We never ask for your password or payment details by email.</p>'
         '</td></tr></table></td></tr></table>'
     )
