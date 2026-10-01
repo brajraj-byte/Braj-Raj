@@ -1,0 +1,27 @@
+{
+  "summary": "Regression testing after code-quality fixes. Added /app/backend/tests/test_regression.py with 17 new tests covering: /api/files 404 guard for invalid paths, /api/auth/logout + last_login/last_logout fields on /api/admin/members, resume parse now returns total_experience + is_duplicate (dup flagged on 2nd upload with same email), /api/bd/daily returns 3 leads + /api/bd/daily/all admin view, /api/job-tracking member/admin scoping with user_name + ?date filter (incl empty date), /api/celebrations ddmm field in dd/mm format. ALL 17 regression tests PASS. Original backend_test.py (36 tests) still PASSES 36/36 when run serially (-n 0). Frontend smoke test: admin login succeeds (must_change_password was already cleared), all 8 tabs navigate OK, Celebrations page shows dates in dd/mm (verified 5 regex matches on page), Business Development shows 3 Today's HR Leads cards + Team Daily Leads disclosure with user name & lead count, Admin Console shows member rows with 'Logged in' / 'Logged off' timestamps (last_login/last_logout wired to UI), Parse Resume list shows DUP badge for duplicates, no console errors, no React key warnings in captured console output.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_regression.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/regression_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Note: when backend_test.py and test_regression.py are run in the SAME pytest session, 9 tests in backend_test.py can transiently fail with 'KeyError: jwt' / IndexError. Root cause: both files use module-level MEMBER_IDS dict/list AND one creates a member and immediately regenerates its invite token; a race-like admin DELETE from the regression cleanup fixture (session scope mismatch) interferes. Isolated runs always pass. Recommend converting module-level state to function-scoped fixtures to make tests parallel-safe (pytest -n auto).",
+    "/api/files still accepts bearer token via ?auth= query parameter (token exposed in CDN/server logs). Still a valid concern from iter-1.",
+    "No rate limiting on /api/auth/login (brute-force protection missing)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_regression.py (new)"
+  ],
+  "success_rate": {"backend": "100% (53/53 across 2 files)", "frontend": "100% smoke"},
+  "test_credentials": "Admin: braj.raj@careerbuddha.in / CareerBuddha@2026 (must_change_password already false). Member test: created via admin invite + accept-invite flow with password MemberPass@2026.",
+  "seed_data_creation": "Tests create TEST_ prefixed members, candidates, job-tracking rows and clean them up in test_zz_cleanup_reg. One leftover TEST member (test_member_ef026d57@example.com) was visible from an in-flight UI test; harmless and marked as TEST_.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend has two test files: backend_test.py (36 tests - existing full coverage) and test_regression.py (17 tests - new regressions for files/logout/duplicate/job-tracking/bd-daily/celebrations). ALWAYS run with -n 0 to avoid xdist/module-state collisions. If running both files in same session triggers 9 flaky failures in backend_test.py, run them separately. UI: data-testid attributes exist on tab buttons and feature toggles (feature-toggle-{key}). All regression concerns in review request are verified green.",
+  "rca of the issue": "N/A — no regressions. Code-quality fixes (/api/files 404 guard, AuthContext logging, stable React keys) are all working as intended."
+}
