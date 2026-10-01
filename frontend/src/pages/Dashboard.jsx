@@ -10,10 +10,11 @@ import BusinessDevelopment from "@/components/tabs/BusinessDevelopment";
 import JoiningDetails from "@/components/tabs/JoiningDetails";
 import SearchTab from "@/components/tabs/SearchTab";
 import Celebrations from "@/components/tabs/Celebrations";
+import JobTracking from "@/components/tabs/JobTracking";
 import AdminConsole from "@/components/tabs/AdminConsole";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown } from "lucide-react";
+import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown, ListChecks } from "lucide-react";
 
 const TABS = [
   { key: "parse_resume", label: "Parse Resume", icon: FileText, comp: ParseResume },
@@ -21,6 +22,7 @@ const TABS = [
   { key: "client_details", label: "Client Details", icon: Building2, comp: ClientDetails },
   { key: "business_development", label: "Business Development", icon: Target, comp: BusinessDevelopment },
   { key: "joining_details", label: "Joining Details", icon: ClipboardCheck, comp: JoiningDetails },
+  { key: "job_tracking", label: "Job Tracking", icon: ListChecks, comp: JobTracking },
   { key: "advanced_search", label: "Search", icon: Search, comp: SearchTab },
   { key: "celebrations", label: "Celebrations", icon: Cake, comp: Celebrations },
 ];

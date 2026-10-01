@@ -13,6 +13,7 @@ const FEATURE_LABELS = {
   parse_resume: "Parse Resume", candidate_db: "Candidate Database", client_details: "Client Details",
   business_development: "Business Development", joining_details: "Joining Details",
   advanced_search: "Advanced Search", celebrations: "Celebrations", ai_bd_suggestions: "AI BD Suggestions",
+  job_tracking: "Job Tracking",
 };
 
 export default function AdminConsole({ features, setFeatures }) {

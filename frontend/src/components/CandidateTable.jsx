@@ -53,7 +53,10 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
                       {c.photo_path ? <img src={fileUrl(c.photo_path)} alt="" className="h-full w-full object-cover" /> : <User className="h-4 w-4 text-orange-300" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 truncate">{c.name || "Unknown"}</p>
+                      <p className="font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                        {c.name || "Unknown"}
+                        {c.is_duplicate && <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 py-0.5 shrink-0" title={`Possible duplicate of ${c.duplicate_name || "existing candidate"}`}>DUP</span>}
+                      </p>
                       <p className="text-xs text-slate-400 truncate">{c.email || c.mobile_number || "—"}</p>
                     </div>
                   </div>

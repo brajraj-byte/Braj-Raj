@@ -32,7 +32,8 @@ export default function ParseResume() {
     const fd = new FormData();
     fd.append("file", files[0]);
     const { data } = await api.post("/resumes/parse", fd, { headers: { "Content-Type": "multipart/form-data" } });
-    toast.success(`Parsed: ${data.name || files[0].name}`);
+    if (data.is_duplicate) toast.warning(`Possible duplicate of ${data.duplicate_name || "existing candidate"}: ${data.name || files[0].name}`);
+    else toast.success(`Parsed: ${data.name || files[0].name}`);
   };
 
   const pollJob = (jobId) => {
@@ -63,8 +64,9 @@ export default function ParseResume() {
     if (!files.length) return;
     setParsing(true);
     setJob(null);
+    const useBulk = files.length > 1 || files.some((f) => f.name.toLowerCase().endsWith(".zip"));
     try {
-      if (files.length === 1) {
+      if (!useBulk) {
         await parseSingle();
         setFiles([]);
         setParsing(false);
@@ -97,8 +99,8 @@ export default function ParseResume() {
           data-testid="resume-dropzone"
         >
           <UploadCloud className="h-10 w-10 text-orange-500 mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Drag & drop resumes here, or click to browse — <span className="font-semibold text-slate-700">bulk upload supported</span></p>
-          <input id="resume-file" type="file" multiple accept=".pdf,.doc,.docx,.txt,.html,.htm" className="hidden"
+          <p className="text-sm text-slate-500">Drag & drop resumes here, or click to browse — <span className="font-semibold text-slate-700">multiple files or a .zip supported</span></p>
+          <input id="resume-file" type="file" multiple accept=".pdf,.doc,.docx,.txt,.html,.htm,.zip" className="hidden"
             onChange={(e) => addFiles(e.target.files)} data-testid="resume-file-input" />
           <label htmlFor="resume-file">
             <span className="inline-block mt-4 text-sm font-semibold text-orange-600 cursor-pointer hover:underline">Choose files</span>
@@ -141,6 +143,7 @@ export default function ParseResume() {
                       : <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />}
                     <span className="truncate text-slate-600">{r.filename}</span>
                     {r.status === "done" && <span className="text-slate-400 truncate">→ {r.name}</span>}
+                    {r.duplicate && <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 py-0.5 shrink-0">DUP</span>}
                     {r.status === "error" && <span className="text-red-400 text-xs">{r.error}</span>}
                   </div>
                 ))}

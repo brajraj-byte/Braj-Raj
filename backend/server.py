@@ -5,6 +5,9 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 import os
+import re
+import io
+import zipfile
 import uuid
 import logging
 import secrets
@@ -114,6 +117,19 @@ class JoiningReq(BaseModel):
     joining_date: Optional[str] = ""
     status: Optional[str] = "offered"  # offered | joined | dropped
     notes: Optional[str] = ""
+
+
+class JobTrackReq(BaseModel):
+    date: Optional[str] = ""
+    candidate_name: str
+    age: Optional[str] = ""
+    email: Optional[str] = ""
+    total_experience: Optional[str] = ""
+    organisation: Optional[str] = ""
+    job_title: Optional[str] = ""
+    present_location: Optional[str] = ""
+    present_ctc: Optional[str] = ""
+    notice_period: Optional[str] = ""
 
 
 # ---------- Helpers ----------
@@ -333,7 +349,7 @@ async def regenerate_invite(member_id: str, user: dict = Depends(current_user)):
 FEATURE_DEFAULTS = {
     "parse_resume": True, "candidate_db": True, "client_details": True,
     "business_development": True, "joining_details": True, "advanced_search": True,
-    "celebrations": True, "ai_bd_suggestions": True,
+    "celebrations": True, "ai_bd_suggestions": True, "job_tracking": True,
 }
 
 
@@ -361,6 +377,23 @@ async def update_features(payload: dict, user: dict = Depends(current_user)):
 ALLOWED_RESUME_EXT = ("pdf", "docx", "doc", "txt", "html", "htm")
 
 
+def _norm_mobile(m):
+    digits = re.sub(r"\D", "", m or "")
+    return digits[-10:] if len(digits) >= 10 else digits
+
+
+async def _find_duplicate(email, mobile):
+    ors = []
+    if email:
+        ors.append({"email": {"$regex": f"^{re.escape(email.strip())}$", "$options": "i"}})
+    mn = _norm_mobile(mobile)
+    if mn:
+        ors.append({"mobile_norm": mn})
+    if not ors:
+        return None
+    return await db.candidates.find_one({"is_deleted": {"$ne": True}, "$or": ors})
+
+
 async def _parse_and_store(data: bytes, ext: str, filename: str, user_id: str, user_name: str) -> dict:
     resume_path = f"{APP_NAME}/resumes/{user_id}/{uuid.uuid4()}.{ext}"
     put_object(resume_path, data, MIME_TYPES.get(ext, "application/octet-stream"))
@@ -374,8 +407,13 @@ async def _parse_and_store(data: bytes, ext: str, filename: str, user_id: str, u
             put_object(photo_path, img_bytes, MIME_TYPES.get(img_ext, "image/png"))
     except Exception as e:
         logger.warning(f"photo extract failed: {e}")
+    mobile_norm = _norm_mobile(fields.get("mobile_number"))
+    dup = await _find_duplicate(fields.get("email"), fields.get("mobile_number"))
     doc = {
-        "id": str(uuid.uuid4()), **fields, "resume_path": resume_path, "resume_filename": filename,
+        "id": str(uuid.uuid4()), **fields, "mobile_norm": mobile_norm,
+        "is_duplicate": bool(dup), "duplicate_of": dup["id"] if dup else None,
+        "duplicate_name": dup.get("name") if dup else None,
+        "resume_path": resume_path, "resume_filename": filename,
         "photo_path": photo_path, "parsed_by_id": user_id, "parsed_by_name": user_name,
         "date_of_parsing": now_iso(), "is_deleted": False,
     }
@@ -401,7 +439,9 @@ async def _process_bulk(job_id: str, user_id: str, user_name: str, items: list):
                 res = {"filename": filename, "status": "error", "error": "Unsupported format"}
             else:
                 doc = await _parse_and_store(it["data"], ext, filename, user_id, user_name)
-                res = {"filename": filename, "status": "done", "name": doc.get("name") or "Unknown", "id": doc["id"]}
+                res = {"filename": filename, "status": "done", "name": doc.get("name") or "Unknown",
+                       "id": doc["id"], "duplicate": bool(doc.get("is_duplicate")),
+                       "duplicate_name": doc.get("duplicate_name")}
         except Exception as ex:
             logger.warning(f"bulk parse {filename} failed: {ex}")
             res = {"filename": filename, "status": "error", "error": "Parse failed"}
@@ -415,7 +455,20 @@ async def parse_bulk(background: BackgroundTasks, files: List[UploadFile] = File
     items = []
     for f in files:
         ext = (f.filename.rsplit(".", 1)[-1] if "." in f.filename else "bin").lower()
-        items.append({"filename": f.filename, "ext": ext, "data": await f.read()})
+        data = await f.read()
+        if ext == "zip":
+            try:
+                zf = zipfile.ZipFile(io.BytesIO(data))
+                for n in zf.namelist():
+                    if n.endswith("/") or "__MACOSX" in n:
+                        continue
+                    sub = (n.rsplit(".", 1)[-1].lower() if "." in n else "")
+                    if sub in ALLOWED_RESUME_EXT:
+                        items.append({"filename": n.rsplit("/", 1)[-1], "ext": sub, "data": zf.read(n)})
+            except Exception as ex:
+                logger.warning(f"zip extract failed: {ex}")
+        else:
+            items.append({"filename": f.filename, "ext": ext, "data": data})
     if not items:
         raise HTTPException(status_code=400, detail="No files provided")
     job_id = str(uuid.uuid4())
@@ -440,6 +493,7 @@ def _candidate_out(c):
     c = dict(c)
     c.pop("_id", None)
     c.pop("is_deleted", None)
+    c.pop("mobile_norm", None)
     return c
 
 
@@ -774,6 +828,55 @@ async def delete_joining(jid: str, user: dict = Depends(current_user)):
     if user.get("role") != "admin":
         query["created_by_id"] = user["id"]
     await db.joinings.update_one(query, {"$set": {"is_deleted": True}})
+    return {"success": True}
+
+
+# ---------- Job Tracking ----------
+@api.get("/job-tracking")
+async def list_job_tracking(date: Optional[str] = None, user: dict = Depends(current_user)):
+    q = {"is_deleted": {"$ne": True}}
+    if user.get("role") != "admin":
+        q["user_id"] = user["id"]
+    if date:
+        q["date"] = date
+    docs = await db.job_tracking.find(q).sort([("date", -1), ("created_at", -1)]).to_list(5000)
+    return [{k: v for k, v in d.items() if k not in ("_id", "is_deleted")} for d in docs]
+
+
+@api.post("/job-tracking")
+async def create_job_tracking(req: JobTrackReq, user: dict = Depends(current_user)):
+    d = req.model_dump()
+    if not d.get("date"):
+        d["date"] = datetime.now(timezone.utc).date().isoformat()
+    doc = {"id": str(uuid.uuid4()), **d, "user_id": user["id"], "user_name": user.get("name"),
+           "created_at": now_iso(), "updated_at": now_iso(), "is_deleted": False}
+    await db.job_tracking.insert_one(dict(doc))
+    doc.pop("_id", None)
+    doc.pop("is_deleted", None)
+    return doc
+
+
+@api.put("/job-tracking/{tid}")
+async def update_job_tracking(tid: str, req: JobTrackReq, user: dict = Depends(current_user)):
+    q = {"id": tid}
+    if user.get("role") != "admin":
+        q["user_id"] = user["id"]
+    d = req.model_dump()
+    d["updated_at"] = now_iso()
+    res = await db.job_tracking.update_one(q, {"$set": d})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"success": True}
+
+
+@api.delete("/job-tracking/{tid}")
+async def delete_job_tracking(tid: str, user: dict = Depends(current_user)):
+    q = {"id": tid}
+    if user.get("role") != "admin":
+        q["user_id"] = user["id"]
+    res = await db.job_tracking.update_one(q, {"$set": {"is_deleted": True}})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Entry not found")
     return {"success": True}
 
 
