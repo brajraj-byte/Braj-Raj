@@ -37,6 +37,7 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
             <tr className="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider">
               <th className="text-left font-semibold py-3 px-4">Candidate</th>
               <th className="text-left font-semibold py-3 px-4 hidden md:table-cell">Designation</th>
+              <th className="text-left font-semibold py-3 px-4 hidden lg:table-cell">Exp (yrs)</th>
               <th className="text-left font-semibold py-3 px-4 hidden lg:table-cell">Company</th>
               <th className="text-left font-semibold py-3 px-4 hidden lg:table-cell">City</th>
               <th className="text-left font-semibold py-3 px-4 hidden xl:table-cell">CTC</th>
@@ -62,6 +63,7 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
                   </div>
                 </td>
                 <td className="py-3 px-4 hidden md:table-cell text-slate-600">{c.designation || "—"}</td>
+                <td className="py-3 px-4 hidden lg:table-cell text-slate-600">{c.total_experience || "—"}</td>
                 <td className="py-3 px-4 hidden lg:table-cell text-slate-600">{c.present_company || "—"}</td>
                 <td className="py-3 px-4 hidden lg:table-cell text-slate-600">{c.city || "—"}</td>
                 <td className="py-3 px-4 hidden xl:table-cell text-slate-600">{c.ctc || "—"}</td>

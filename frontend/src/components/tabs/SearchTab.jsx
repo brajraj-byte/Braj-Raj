@@ -11,6 +11,7 @@ const FIELDS = [
   ["name", "Name"], ["mobile", "Mobile Number"], ["email", "Email"], ["city", "City"],
   ["industry", "Industry"], ["present_company", "Present Company"], ["designation", "Designation"],
   ["preferred_location", "Preferred Location"], ["qualification", "Highest Qualification"],
+  ["experience", "Total Experience (yrs)"],
   ["skill", "Skill Set"], ["notice_period", "Notice Period"],
 ];
 

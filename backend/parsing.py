@@ -134,6 +134,11 @@ async def parse_resume(file_bytes: bytes, ext: str) -> dict:
         result["skill_sets"] = [s.strip() for s in result["skill_sets"].split(",") if s.strip()]
     if not isinstance(result.get("skill_sets"), list):
         result["skill_sets"] = []
+    exp = result.get("total_experience")
+    if exp is not None and exp != "":
+        if isinstance(exp, float) and exp.is_integer():
+            exp = int(exp)
+        result["total_experience"] = str(exp)
     return result
 
 

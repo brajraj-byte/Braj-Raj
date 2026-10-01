@@ -513,6 +513,7 @@ async def list_resumes(
     present_company: Optional[str] = None, designation: Optional[str] = None,
     preferred_location: Optional[str] = None, qualification: Optional[str] = None,
     skill: Optional[str] = None, notice_period: Optional[str] = None,
+    experience: Optional[str] = None,
     user: dict = Depends(current_user),
 ):
     query = {"is_deleted": {"$ne": True}}
@@ -527,6 +528,7 @@ async def list_resumes(
     if preferred_location: query["preferred_location"] = rx(preferred_location)
     if qualification: query["highest_qualification"] = rx(qualification)
     if notice_period: query["notice_period"] = rx(notice_period)
+    if experience: query["total_experience"] = rx(experience)
     if skill: query["skill_sets"] = rx(skill)
     if q:
         query["$or"] = [
