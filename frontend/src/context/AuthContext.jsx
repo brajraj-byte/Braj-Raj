@@ -7,6 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null); // null = loading, false = logged out, object = logged in
   const hbRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
 
   const bootstrap = useCallback(async () => {
     const token = localStorage.getItem("cb_token");
@@ -27,10 +28,24 @@ export function AuthProvider({ children }) {
     bootstrap();
   }, [bootstrap]);
 
-  // heartbeat for online status
+  // Track genuine user activity; an idle user (no interaction) stops sending
+  // heartbeats so the admin console can mark them Away / Dormant.
+  useEffect(() => {
+    const mark = () => { lastActivityRef.current = Date.now(); };
+    const evts = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+    evts.forEach((e) => window.addEventListener(e, mark, { passive: true }));
+    return () => evts.forEach((e) => window.removeEventListener(e, mark));
+  }, []);
+
+  // heartbeat for online status (only while the user is actively using the app)
   useEffect(() => {
     if (user && user.id) {
-      const beat = () => api.post("/heartbeat").catch(() => {});
+      const ACTIVE_WINDOW = 90000;
+      const beat = () => {
+        if (Date.now() - lastActivityRef.current < ACTIVE_WINDOW) {
+          api.post("/heartbeat").catch(() => {});
+        }
+      };
       beat();
       hbRef.current = setInterval(beat, 30000);
       return () => clearInterval(hbRef.current);

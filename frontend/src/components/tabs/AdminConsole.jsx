@@ -19,6 +19,19 @@ const FEATURE_LABELS = {
 export default function AdminConsole({ features, setFeatures }) {
   const [members, setMembers] = useState([]);
   const fmt = (s) => (s ? new Date(s).toLocaleString() : "—");
+  const STATE = {
+    online: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "text-emerald-500", label: "Online", flash: false },
+    away: { cls: "bg-slate-100 text-slate-600 border-slate-200", dot: "text-slate-400", label: "Away", flash: false },
+    dormant: { cls: "bg-orange-50 text-orange-700 border-orange-400", dot: "text-orange-500", label: "Dormant", flash: true },
+    offline: { cls: "bg-slate-100 text-slate-500 border-slate-200", dot: "text-slate-300", label: "Offline", flash: false },
+  };
+  const stateOf = (m) => {
+    if (!m.last_seen) return "offline";
+    const diff = Date.now() - new Date(m.last_seen).getTime();
+    if (diff < 120000) return "online";       // active in last 2 min
+    if (diff >= 1800000) return "dormant";     // idle 30+ min -> flashing orange
+    return "away";
+  };
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "" });
   const [creating, setCreating] = useState(false);
@@ -99,13 +112,17 @@ export default function AdminConsole({ features, setFeatures }) {
                   <p className="font-heading font-semibold text-slate-900">{m.name}</p>
                   <p className="text-xs text-slate-500">{m.email}</p>
                 </div>
-                {m.status === "active" ? (
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${m.online ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-600 border border-slate-200"}`}
-                    data-testid={m.online ? `member-status-online-${m.id}` : `member-status-offline-${m.id}`}>
-                    <Circle className={`h-2 w-2 fill-current ${m.online ? "text-emerald-500" : "text-slate-400"}`} />
-                    {m.online ? "Online" : "Offline"}
-                  </span>
-                ) : (
+                {m.status === "active" ? (() => {
+                  const s = stateOf(m);
+                  const cfg = STATE[s];
+                  return (
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.cls} ${cfg.flash ? "cb-flash" : ""}`}
+                      data-testid={`member-status-${s}-${m.id}`}>
+                      <Circle className={`h-2 w-2 fill-current ${cfg.dot}`} />
+                      {cfg.label}
+                    </span>
+                  );
+                })() : (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200" data-testid={`member-status-invited-${m.id}`}>Invited</span>
                 )}
               </div>

@@ -113,6 +113,9 @@
 
 .animate-fade-up { animation: fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
 
+@keyframes cb-flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.cb-flash { animation: cb-flash 1.1s ease-in-out infinite; }
+
 ::selection { background: hsl(20 90% 48% / 0.2); }
 
 @layer base {
