@@ -24,11 +24,27 @@ export default function AcceptInvite() {
       .catch(() => setStatus("invalid"));
   }, [token]);
 
+  const onDDMM = (field) => (e) => {
+    let v = e.target.value.replace(/[^\d]/g, "").slice(0, 4);
+    if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2);
+    setForm((f) => ({ ...f, [field]: v }));
+  };
+
+  const validDDMM = (v) => {
+    if (!v) return true; // optional
+    const m = /^(\d{2})\/(\d{2})$/.exec(v);
+    if (!m) return false;
+    const d = +m[1], mo = +m[2];
+    return d >= 1 && d <= 31 && mo >= 1 && mo <= 12;
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
     if (form.password.length < 6) return setErr("Password must be at least 6 characters");
     if (form.password !== form.confirm) return setErr("Passwords do not match");
+    if (!validDDMM(form.date_of_birth)) return setErr("Birthday must be in DD/MM format (e.g. 15/08)");
+    if (!validDDMM(form.work_anniversary)) return setErr("Work anniversary must be in DD/MM format (e.g. 01/04)");
     setSaving(true);
     try {
       await acceptInvite({
@@ -81,12 +97,12 @@ export default function AcceptInvite() {
             <Input type="password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} required data-testid="invite-confirm-input" />
           </div>
           <div className="space-y-2">
-            <Label>Date of birth</Label>
-            <Input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} data-testid="invite-dob-input" />
+            <Label>Birthday (DD/MM)</Label>
+            <Input type="text" inputMode="numeric" placeholder="DD/MM" maxLength={5} value={form.date_of_birth} onChange={onDDMM("date_of_birth")} data-testid="invite-dob-input" />
           </div>
           <div className="space-y-2">
-            <Label>Work anniversary</Label>
-            <Input type="date" value={form.work_anniversary} onChange={(e) => setForm({ ...form, work_anniversary: e.target.value })} data-testid="invite-anniversary-input" />
+            <Label>Work anniversary (DD/MM)</Label>
+            <Input type="text" inputMode="numeric" placeholder="DD/MM" maxLength={5} value={form.work_anniversary} onChange={onDDMM("work_anniversary")} data-testid="invite-anniversary-input" />
           </div>
           <div className="space-y-2 col-span-2">
             <Label>Mobile (optional)</Label>

@@ -908,7 +908,7 @@ def _parse_day_month(s):
     if not s:
         return None
     s = str(s).strip()
-    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%m/%d/%Y", "%d-%m", "%m-%d"):
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%m/%d/%Y", "%d/%m", "%m/%d", "%d-%m", "%m-%d"):
         try:
             dt = datetime.strptime(s, fmt)
             return (dt.month, dt.day)
