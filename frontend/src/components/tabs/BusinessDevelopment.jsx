@@ -10,11 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Sparkles, Loader2, Target, Mail, Phone, MapPin, Calendar, Trash2, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
+import DailyHrLeads from "@/components/DailyHrLeads";
+import AdminDailyLeads from "@/components/AdminDailyLeads";
+import { useAuth } from "@/context/AuthContext";
 
 const STATUS = { new: "bg-blue-50 text-blue-700 border-blue-200", contacted: "bg-amber-50 text-amber-700 border-amber-200", followup: "bg-purple-50 text-purple-700 border-purple-200", closed: "bg-emerald-50 text-emerald-700 border-emerald-200" };
 const empty = { company: "", source_type: "manual", source_value: "", hr_contact: "", hr_email: "", hr_mobile: "", vacancy: "", location: "", status: "new", next_followup: "", notes: "" };
 
 export default function BusinessDevelopment({ features }) {
+  const { user } = useAuth();
   const [leads, setLeads] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
@@ -121,6 +125,10 @@ export default function BusinessDevelopment({ features }) {
           </Dialog>
         </div>
       </div>
+
+      <DailyHrLeads onTracked={load} />
+
+      {user?.role === "admin" && <AdminDailyLeads />}
 
       {leads.length === 0 ? (
         <div className="text-center py-16 text-slate-400 text-sm">No BD leads yet. Add a lead or generate AI HR suggestions.</div>

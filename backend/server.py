@@ -11,7 +11,7 @@ import secrets
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, UploadFile, File, Query, Header
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, UploadFile, File, Query, Header, BackgroundTasks
 from fastapi.responses import Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -42,6 +42,7 @@ ONLINE_WINDOW = 120  # seconds
 get_current_user = None  # set on startup
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "").rstrip("/")
 OWNER_GOOGLE_EMAIL = os.environ.get("OWNER_GOOGLE_EMAIL", "").lower().strip()
+WEBHOOK_CRON_SECRET = os.environ.get("WEBHOOK_CRON_SECRET", "")
 
 
 async def current_user(request: Request) -> dict:
@@ -357,42 +358,82 @@ async def update_features(payload: dict, user: dict = Depends(current_user)):
 
 
 # ---------- Resume parsing & candidate DB ----------
-@api.post("/resumes/parse")
-async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(current_user)):
-    ext = (file.filename.rsplit(".", 1)[-1] if "." in file.filename else "bin").lower()
-    if ext not in ("pdf", "docx", "doc", "txt", "html", "htm"):
-        raise HTTPException(status_code=400, detail="Supported formats: PDF, DOC, DOCX, TXT, HTML")
-    data = await file.read()
+ALLOWED_RESUME_EXT = ("pdf", "docx", "doc", "txt", "html", "htm")
 
-    resume_path = f"{APP_NAME}/resumes/{user['id']}/{uuid.uuid4()}.{ext}"
+
+async def _parse_and_store(data: bytes, ext: str, filename: str, user_id: str, user_name: str) -> dict:
+    resume_path = f"{APP_NAME}/resumes/{user_id}/{uuid.uuid4()}.{ext}"
     put_object(resume_path, data, MIME_TYPES.get(ext, "application/octet-stream"))
-
     fields = await parsing.parse_resume(data, ext)
-
     photo_path = None
     try:
         img_bytes, img_ext = parsing.extract_photo(data, ext)
         if img_bytes:
             img_ext = (img_ext or "png").lower()
-            photo_path = f"{APP_NAME}/photos/{user['id']}/{uuid.uuid4()}.{img_ext}"
+            photo_path = f"{APP_NAME}/photos/{user_id}/{uuid.uuid4()}.{img_ext}"
             put_object(photo_path, img_bytes, MIME_TYPES.get(img_ext, "image/png"))
     except Exception as e:
         logger.warning(f"photo extract failed: {e}")
-
     doc = {
-        "id": str(uuid.uuid4()),
-        **fields,
-        "resume_path": resume_path,
-        "resume_filename": file.filename,
-        "photo_path": photo_path,
-        "parsed_by_id": user["id"],
-        "parsed_by_name": user.get("name"),
-        "date_of_parsing": now_iso(),
-        "is_deleted": False,
+        "id": str(uuid.uuid4()), **fields, "resume_path": resume_path, "resume_filename": filename,
+        "photo_path": photo_path, "parsed_by_id": user_id, "parsed_by_name": user_name,
+        "date_of_parsing": now_iso(), "is_deleted": False,
     }
     await db.candidates.insert_one(dict(doc))
     doc.pop("_id", None)
     return doc
+
+
+@api.post("/resumes/parse")
+async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(current_user)):
+    ext = (file.filename.rsplit(".", 1)[-1] if "." in file.filename else "bin").lower()
+    if ext not in ALLOWED_RESUME_EXT:
+        raise HTTPException(status_code=400, detail="Supported formats: PDF, DOC, DOCX, TXT, HTML")
+    data = await file.read()
+    return await _parse_and_store(data, ext, file.filename, user["id"], user.get("name"))
+
+
+async def _process_bulk(job_id: str, user_id: str, user_name: str, items: list):
+    for it in items:
+        ext, filename = it["ext"], it["filename"]
+        try:
+            if ext not in ALLOWED_RESUME_EXT:
+                res = {"filename": filename, "status": "error", "error": "Unsupported format"}
+            else:
+                doc = await _parse_and_store(it["data"], ext, filename, user_id, user_name)
+                res = {"filename": filename, "status": "done", "name": doc.get("name") or "Unknown", "id": doc["id"]}
+        except Exception as ex:
+            logger.warning(f"bulk parse {filename} failed: {ex}")
+            res = {"filename": filename, "status": "error", "error": "Parse failed"}
+        await db.parse_jobs.update_one({"id": job_id}, {"$push": {"results": res}, "$inc": {"done": 1}})
+    await db.parse_jobs.update_one({"id": job_id}, {"$set": {"status": "completed"}})
+
+
+@api.post("/resumes/parse-bulk")
+async def parse_bulk(background: BackgroundTasks, files: List[UploadFile] = File(...),
+                     user: dict = Depends(current_user)):
+    items = []
+    for f in files:
+        ext = (f.filename.rsplit(".", 1)[-1] if "." in f.filename else "bin").lower()
+        items.append({"filename": f.filename, "ext": ext, "data": await f.read()})
+    if not items:
+        raise HTTPException(status_code=400, detail="No files provided")
+    job_id = str(uuid.uuid4())
+    await db.parse_jobs.insert_one({
+        "id": job_id, "user_id": user["id"], "total": len(items), "done": 0,
+        "status": "processing", "results": [], "created_at": now_iso(),
+    })
+    background.add_task(_process_bulk, job_id, user["id"], user.get("name"), items)
+    return {"job_id": job_id, "total": len(items)}
+
+
+@api.get("/resumes/bulk/{job_id}")
+async def bulk_status(job_id: str, user: dict = Depends(current_user)):
+    job = await db.parse_jobs.find_one({"id": job_id, "user_id": user["id"]})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job.pop("_id", None)
+    return job
 
 
 def _candidate_out(c):
@@ -566,6 +607,136 @@ async def bd_suggest(req: BDSuggestReq, user: dict = Depends(current_user)):
         logger.warning(f"bd suggest failed: {ex}")
         data = {"suggestions": [], "note": "Could not generate suggestions right now."}
     return data
+
+
+# ---------- Daily HR leads (LinkedIn / Google sourced) ----------
+import urllib.parse as _urlparse
+
+
+def _search_urls(company, title, hr_name):
+    q = _urlparse.quote_plus
+    people = f"{title} {company}".strip()
+    return {
+        "linkedin_search_url": f"https://www.linkedin.com/search/results/people/?keywords={q(people)}",
+        "google_search_url": f"https://www.google.com/search?q={q(f'{title} {company} HR email')}",
+        "mobile_search_url": f"https://www.google.com/search?q={q((hr_name or title) + ' ' + company + ' HR contact number')}",
+    }
+
+
+async def _generate_daily_hr_leads(industry: str = "", city: str = ""):
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import json as _json
+    focus = ""
+    if industry:
+        focus += f" Focus on the {industry} industry."
+    if city:
+        focus += f" Prefer companies with hiring activity in or around {city}."
+    prompt = (
+        "You are a recruitment lead-generation researcher. Suggest 3 DIFFERENT real, well-known companies "
+        "that are commonly hiring, and for each a senior HR / Talent Acquisition contact to target. "
+        "Return JSON fields per lead: company, domain (primary website domain like example.com), industry, "
+        "city, title (senior HR/TA role), hr_name (a plausible contact name to look for - a suggestion to be "
+        "verified on LinkedIn, not confirmed data), email_pattern (like 'first.last'), note (one short outreach tip)."
+        + focus +
+        ' Respond ONLY as JSON: {"leads":[{...},{...},{...}]}'
+    )
+    chat = LlmChat(api_key=os.environ.get("EMERGENT_LLM_KEY"), session_id="daily-hr-leads",
+                   system_message="You are a recruitment research assistant. Respond only with valid JSON.").with_model("gemini", "gemini-2.5-flash")
+    leads = []
+    try:
+        resp = await chat.send_message(UserMessage(text=prompt))
+        raw = resp if isinstance(resp, str) else getattr(resp, "content", str(resp))
+        raw = raw.strip().strip("`")
+        if raw.lower().startswith("json"):
+            raw = raw[4:]
+        s, e = raw.find("{"), raw.rfind("}")
+        data = _json.loads(raw[s:e + 1])
+        for lead in (data.get("leads") or [])[:3]:
+            company = (lead.get("company") or "").strip()
+            domain = (lead.get("domain") or "").strip().lstrip("@")
+            title = (lead.get("title") or "HR / Talent Acquisition").strip()
+            hr_name = (lead.get("hr_name") or "").strip()
+            pattern = (lead.get("email_pattern") or "first.last").strip()
+            likely_email = f"{pattern}@{domain}" if domain and "@" not in pattern else pattern
+            leads.append({
+                "company": company, "domain": domain, "industry": lead.get("industry") or industry,
+                "city": lead.get("city") or city, "title": title, "hr_name": hr_name,
+                "likely_email": likely_email, "mobile": "", "note": lead.get("note") or "",
+                **_search_urls(company, title, hr_name),
+            })
+    except Exception as ex:
+        logger.warning(f"daily hr leads failed: {ex}")
+    return leads
+
+
+async def _ensure_daily_leads(user_id, industry="", city="", force=False):
+    today = datetime.now(timezone.utc).date().isoformat()
+    existing = await db.daily_hr_leads.find_one({"user_id": user_id, "date": today})
+    if existing and not force and existing.get("leads"):
+        existing.pop("_id", None)
+        return existing
+    leads = await _generate_daily_hr_leads(industry, city)
+    doc = {"user_id": user_id, "date": today, "generated_at": now_iso(),
+           "industry": industry, "city": city, "leads": leads}
+    await db.daily_hr_leads.update_one({"user_id": user_id, "date": today}, {"$set": doc}, upsert=True)
+    return doc
+
+
+def _daily_out(doc):
+    return {"date": doc["date"], "generated_at": doc.get("generated_at"),
+            "industry": doc.get("industry", ""), "city": doc.get("city", ""), "leads": doc.get("leads", [])}
+
+
+@api.get("/bd/daily")
+async def get_daily_leads(user: dict = Depends(current_user)):
+    full = await db.users.find_one({"_id": ObjectId(user["id"])})
+    doc = await _ensure_daily_leads(user["id"], full.get("bd_industry", ""), full.get("bd_city", ""))
+    return _daily_out(doc)
+
+
+@api.post("/bd/daily/refresh")
+async def refresh_daily_leads(payload: dict = None, user: dict = Depends(current_user)):
+    payload = payload or {}
+    industry = (payload.get("industry") or "").strip()
+    city = (payload.get("city") or "").strip()
+    await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": {"bd_industry": industry, "bd_city": city}})
+    doc = await _ensure_daily_leads(user["id"], industry, city, force=True)
+    return _daily_out(doc)
+
+
+@api.get("/bd/daily/all")
+async def all_daily_leads(user: dict = Depends(current_user)):
+    require_admin(user)
+    docs = await db.daily_hr_leads.find({}).sort([("date", -1), ("generated_at", -1)]).to_list(5000)
+    users = {str(u["_id"]): u for u in await db.users.find({}).to_list(2000)}
+    out = []
+    for d in docs:
+        u = users.get(d["user_id"], {})
+        out.append({
+            "user_id": d["user_id"], "user_name": u.get("name", "Unknown"), "user_email": u.get("email", ""),
+            "date": d["date"], "generated_at": d.get("generated_at"),
+            "industry": d.get("industry", ""), "city": d.get("city", ""), "leads": d.get("leads", []),
+        })
+    return out
+
+
+async def _run_daily_leads_job():
+    users = await db.users.find({"status": "active"}).to_list(1000)
+    for u in users:
+        try:
+            await _ensure_daily_leads(str(u["_id"]), u.get("bd_industry", ""), u.get("bd_city", ""), force=True)
+        except Exception as ex:
+            logger.warning(f"daily leads job for {u.get('email')} failed: {ex}")
+
+
+@api.post("/cron/daily-hr-leads")
+async def cron_daily_hr_leads(background: BackgroundTasks, authorization: Optional[str] = Header(None)):
+    # Cron endpoints must ack 2xx immediately; enqueue/background the actual work.
+    token = authorization[7:] if authorization and authorization.startswith("Bearer ") else ""
+    if not WEBHOOK_CRON_SECRET or not token or not secrets.compare_digest(token, WEBHOOK_CRON_SECRET):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    background.add_task(_run_daily_leads_job)
+    return {"accepted": True}
 
 
 # ---------- Joining details ----------
