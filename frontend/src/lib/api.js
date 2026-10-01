@@ -11,10 +11,24 @@ api.interceptors.request.use((cfg) => {
   return cfg;
 });
 
-export const fileUrl = (path) =>
-  `${API}/files?path=${encodeURIComponent(path)}&auth=${encodeURIComponent(
+export const fileUrl = (path, name) => {
+  let url = `${API}/files?path=${encodeURIComponent(path)}&auth=${encodeURIComponent(
     localStorage.getItem("cb_token") || ""
   )}`;
+  if (name) url += `&name=${encodeURIComponent(name)}`;
+  return url;
+};
+
+export function resumeDownloadName(c) {
+  const ext = (c.resume_path || "").split(".").pop() || "pdf";
+  const name = (c.name || "Candidate").toString().trim();
+  const exp = (c.total_experience ?? "").toString().trim() || "NA";
+  const safe = `Career Buddha_${name}_${exp}`
+    .replace(/[\\/:*?"<>|\n\r]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return `${safe}.${ext}`;
+}
 
 export function apiError(e) {
   const d = e?.response?.data?.detail;

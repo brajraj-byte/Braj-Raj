@@ -11,6 +11,7 @@ FIELDS = [
     "name", "mobile_number", "email", "age", "date_of_birth", "city", "ctc",
     "industry", "present_company", "designation", "preferred_location",
     "highest_qualification", "linkedin_url", "skill_sets", "notice_period",
+    "total_experience",
 ]
 
 SYSTEM_MSG = (
@@ -76,6 +77,7 @@ def _prompt() -> str:
         "'date_of_birth' in DD-MM-YYYY or YYYY-MM-DD if present else null. "
         "'ctc' as a short string like '12 LPA' if present else null. "
         "'notice_period' as a short string like '30 days' if present else null. "
+        "'total_experience' as the total years of professional work experience as a number (e.g. 9 or 7.5) if derivable from the resume, else null. "
         "Use null for any field not found. Do not invent data. Return ONLY the JSON object."
     )
 

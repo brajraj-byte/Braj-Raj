@@ -1,4 +1,4 @@
-import { fileUrl } from "@/lib/api";
+import { fileUrl, resumeDownloadName } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +50,7 @@ export default function CandidateDetailDialog({ candidate, open, onOpenChange })
           <Field icon={MapPin} label="Preferred Location" value={c.preferred_location} />
           <Field icon={Calendar} label="Date of Birth" value={c.date_of_birth} />
           <Field icon={User} label="Age" value={c.age} />
+          <Field icon={Briefcase} label="Total Experience" value={c.total_experience ? `${c.total_experience} yrs` : ""} />
           <Field icon={Building2} label="Industry" value={c.industry} />
           <Field icon={Briefcase} label="Present Company" value={c.present_company} />
           <Field icon={Briefcase} label="CTC" value={c.ctc} />
@@ -61,9 +62,9 @@ export default function CandidateDetailDialog({ candidate, open, onOpenChange })
         </div>
 
         {c.resume_path && (
-          <a href={fileUrl(c.resume_path)} target="_blank" rel="noreferrer" download className="block mt-4" data-testid="candidate-resume-download-button">
+          <a href={fileUrl(c.resume_path, resumeDownloadName(c))} download={resumeDownloadName(c)} className="block mt-4" data-testid="candidate-resume-download-button">
             <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold">
-              <Download className="h-4 w-4 mr-2" /> Download Resume ({c.resume_filename || "file"})
+              <Download className="h-4 w-4 mr-2" /> Download Resume ({resumeDownloadName(c)})
             </Button>
           </a>
         )}

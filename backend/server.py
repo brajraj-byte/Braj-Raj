@@ -548,6 +548,7 @@ async def delete_resume(cid: str, user: dict = Depends(current_user)):
 
 @api.get("/files")
 async def download_file(path: str = Query(...), auth: Optional[str] = Query(None),
+                        name: Optional[str] = Query(None),
                         authorization: Optional[str] = Header(None)):
     token = None
     if authorization and authorization.startswith("Bearer "):
@@ -564,9 +565,12 @@ async def download_file(path: str = Query(...), auth: Optional[str] = Query(None
         data, ctype = get_object(path)
     except Exception:
         raise HTTPException(status_code=404, detail="File not found")
-    filename = path.rsplit("/", 1)[-1]
     is_img = ctype.startswith("image/")
-    headers = {} if is_img else {"Content-Disposition": f'attachment; filename="{filename}"'}
+    if is_img:
+        headers = {}
+    else:
+        dl = (name or path.rsplit("/", 1)[-1]).replace('"', "").replace("\n", " ").replace("\r", " ").strip()
+        headers = {"Content-Disposition": f'attachment; filename="{dl}"'}
     return Response(content=data, media_type=ctype, headers=headers)
 
 

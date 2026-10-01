@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fileUrl, api, apiError } from "@/lib/api";
+import { fileUrl, api, apiError, resumeDownloadName } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import CandidateDetailDialog from "@/components/CandidateDetailDialog";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +74,7 @@ export default function CandidateTable({ candidates, emptyText = "No candidates 
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
                     {c.resume_path && (
-                      <a href={fileUrl(c.resume_path)} target="_blank" rel="noreferrer" download data-testid={`candidate-download-${c.id}`}>
+                      <a href={fileUrl(c.resume_path, resumeDownloadName(c))} download={resumeDownloadName(c)} data-testid={`candidate-download-${c.id}`}>
                         <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white"><Download className="h-3.5 w-3.5" /></Button>
                       </a>
                     )}
