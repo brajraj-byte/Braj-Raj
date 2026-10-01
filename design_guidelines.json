@@ -1,0 +1,158 @@
+{
+  "project_name": "Career Buddha - Powerful Intervention",
+  "app_type": "Data-Heavy SaaS Dashboard / ATS (Recruitment Tracking System)",
+  "design_archetype": "Swiss & High-Contrast (Warm Saffron B2B Executive)",
+  "theme_strategy": {
+    "default_mode": "light",
+    "background_philosophy": "Predominantly pure crisp white (#FFFFFF) with warm neutral accents (#F8FAFC, #F1F5F9). High contrast readability designed for serious B2B recruitment teams spending 8+ hours daily.",
+    "primary_brand": "Warm Orange / Saffron (#EA580C / #F97316 / #D97706) inspired by the Buddha meditation icon, evoking wisdom, warmth, energy, and intervention.",
+    "border_and_divider": "Delicate 1px borders (#E2E8F0) with crisp rounded corners, avoiding heavy dark dividers."
+  },
+  "color_palette": {
+    "primary": {
+      "main": "#EA580C",
+      "hover": "#C2410C",
+      "active": "#9A3412",
+      "light": "#FFF7ED",
+      "light_border": "#FFEDD5",
+      "gradient": "linear-gradient(135deg, #F97316 0%, #EA580C 100%)"
+    },
+    "secondary": {
+      "main": "#0F172A",
+      "hover": "#1E293B",
+      "light": "#F8FAFC",
+      "foreground": "#F8FAFC"
+    },
+    "neutral": {
+      "background": "#FFFFFF",
+      "surface": "#F8FAFC",
+      "surface_hover": "#F1F5F9",
+      "border": "#E2E8F0",
+      "border_subtle": "#F1F5F9",
+      "text_main": "#0F172A",
+      "text_muted": "#64748B",
+      "text_light": "#94A3B8"
+    },
+    "status": {
+      "online_green": "#10B981",
+      "online_green_bg": "#ECFDF5",
+      "online_green_border": "#A7F3D0",
+      "offline_grey": "#94A3B8",
+      "offline_grey_bg": "#F1F5F9",
+      "offline_grey_border": "#CBD5E1",
+      "ai_amber": "#F59E0B",
+      "ai_amber_bg": "#FEF3C7",
+      "ai_purple": "#8B5CF6",
+      "ai_purple_bg": "#F5F3FF",
+      "destructive": "#EF4444",
+      "destructive_bg": "#FEF2F2"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif",
+      "body": "'Outfit', 'General Sans', system-ui, sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', monospace"
+    },
+    "hierarchy": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight text-slate-900",
+      "h2_section": "text-2xl sm:text-3xl font-bold tracking-tight text-slate-900",
+      "h3_card": "text-lg sm:text-xl font-semibold text-slate-900",
+      "body_main": "text-sm sm:text-base text-slate-700 leading-relaxed",
+      "body_small": "text-xs sm:text-sm text-slate-500",
+      "overline": "text-xs font-bold uppercase tracking-widest text-orange-600"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto",
+    "card_padding": "p-5 sm:p-6",
+    "grid_gap": "gap-5 sm:gap-6",
+    "bento_grid_protocol": "Use asymmetric 12-column layouts for dashboards (col-span-8 for primary tables/charts, col-span-4 for AI suggestions and quick actions).",
+    "border_radius": "rounded-xl (12px) for cards, rounded-lg (8px) for buttons/inputs, rounded-full for status pills."
+  },
+  "key_components_styling": {
+    "header_nav": {
+      "type": "Top-horizontal navigation with sticky blur overlay",
+      "classes": "sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3 shadow-xs",
+      "logo_style": "Flex container with Orange Buddha Meditation Icon + 'Career Buddha' in bold Plus Jakarta Sans font with saffron gradient accent tag 'Powerful Intervention'."
+    },
+    "tabs": {
+      "style": "Underline or pill-style tabs with active orange bottom bar / orange background",
+      "active_tab": "bg-orange-600 text-white font-semibold shadow-sm rounded-lg px-4 py-2",
+      "inactive_tab": "text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium rounded-lg px-4 py-2 transition-all"
+    },
+    "candidate_table": {
+      "style": "Dense B2B data table with hover elevation",
+      "header_row": "bg-slate-50 text-slate-700 font-semibold text-xs uppercase tracking-wider border-b border-slate-200 py-3.5 px-4",
+      "data_row": "hover:bg-orange-50/40 border-b border-slate-100 transition-colors text-sm text-slate-800 py-3 px-4"
+    },
+    "online_offline_badge": {
+      "online": "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200",
+      "offline": "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200"
+    },
+    "buttons": {
+      "primary": "bg-orange-600 hover:bg-orange-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm hover:shadow transition-all duration-150 active:scale-[0.98]",
+      "secondary": "bg-white hover:bg-slate-50 text-slate-800 font-semibold px-4 py-2.5 rounded-lg border border-slate-200 shadow-2xs transition-all",
+      "ai_action": "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm flex items-center gap-2"
+    },
+    "forms_and_inputs": {
+      "input_field": "w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all shadow-2xs"
+    }
+  },
+  "modules_guidelines": {
+    "resume_parser": "Drag-and-drop resume upload zone with AI extraction breakdown displaying all 17 extracted candidate attributes in organized structured cards.",
+    "candidate_database": "Unified searchable repository with instant multi-facet filter pills (CTC range, Notice Period, Industry, Skills, Location) and batch actions.",
+    "client_details": "HR & Client Organisation Directory with quick mailto/tel action triggers and corporate profile cards.",
+    "business_development": "Pipeline tracker with AI-Suggested HR Contacts based on target industries and daily log interactive timelines.",
+    "joining_details": "Form per placement with real-time status update visible to assigned recruiter and single-admin.",
+    "advanced_search": "Boolean & multi-parameter search engine with highlighted term matches and one-click resume download.",
+    "celebrations": "Gamified team & candidate birthday / work anniversary wall with warm celebratory saffron card themes.",
+    "admin_console": "Team member management grid with live websocket-style status indicators, access URL generator, and feature upgrade tier cards."
+  },
+  "image_urls": {
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhciUyMGhlYWRzaG90fGVufDB8fHx8MTc5MDg4NzM4Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Male recruiter avatar portrait"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHw0fHxjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhciUyMGhlYWRzaG90fGVufDB8fHx8MTc5MDg4NzM4Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Female recruiter avatar portrait"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA6OTV8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhciUyMGhlYWRzaG90fGVufDB8fHx8MTc5MDg4NzM4Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Senior recruitment manager portrait"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA6OTV8MHwxfHNlYXJjaHwyfHxjb3Jwb3JhdGUlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMGF2YXRhciUyMGhlYWRzaG90fGVufDB8fHx8MTc5MDg4NzM4Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Female candidate avatar portrait"
+      }
+    ],
+    "workplace": [
+      {
+        "url": "https://images.unsplash.com/photo-1758518730083-4c12527b6742?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjByZWNydWl0ZXIlMjBjYW5kaWRhdGUlMjBhdmF0YXJzJTIwY29ycG9yYXRlJTIwb2ZmaWNlfGVufDB8fHx8MTc5MDg4NzM3MXww&ixlib=rb-4.1.0&q=85",
+        "description": "Recruitment agency team meeting"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1758520144427-ddb02ac74e9d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjByZWNydWl0ZXIlMjBjYW5kaWRhdGUlMjBhdmF0YXJzJTIwY29ycG9yYXRlJTIwb2ZmaWNlfGVufDB8fHx8MTc5MDg4NzM3MXww&ixlib=rb-4.1.0&q=85",
+        "description": "Candidate job interview handshake"
+      }
+    ]
+  },
+  "motion_and_animations": {
+    "hover_states": "transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "active_press": "active:scale-[0.98]",
+    "tab_switch": "framer-motion opacity fade in + layoutId smooth slide indicator",
+    "toast": "Use Sonner with orange border accent for success notifications"
+  },
+  "testing_protocol": {
+    "data_testid_rule": "MUST add data-testid in kebab-case to all interactive buttons, inputs, tabs, table rows, and status indicators (e.g. data-testid='tab-parse-resume', data-testid='admin-member-status-online', data-testid='candidate-resume-download-button')."
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the light theme with crisp WHITE background (#FFFFFF) and warm saffron/orange (#EA580C) brand accents.",
+    "Ensure all 7 tabs + Admin Console are fully implemented with realistic interactive mock functionality and sample ATS data.",
+    "Add data-testid attributes to all key components as specified in testing protocol.",
+    "Use Lucide React icons for clean B2B iconography.",
+    "Use standard JavaScript (.js / .jsx) components as specified for this React project."
+  ]
+}
