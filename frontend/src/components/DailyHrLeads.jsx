@@ -57,7 +57,7 @@ export default function DailyHrLeads({ onTracked }) {
           <div className="h-9 w-9 rounded-lg bg-orange-100 flex items-center justify-center"><Sun className="h-5 w-5 text-orange-600" /></div>
           <div>
             <h3 className="font-heading font-bold text-slate-900">Today's HR Leads</h3>
-            <p className="text-xs text-slate-500">3 daily prospects with LinkedIn & Google search links{data?.date ? ` · ${data.date}` : ""}</p>
+            <p className="text-xs text-slate-500">3 daily mid-sized / SME Indian company prospects with LinkedIn & Google search links{data?.date ? ` · ${data.date}` : ""}</p>
           </div>
         </div>
         <div className="flex items-end gap-2">

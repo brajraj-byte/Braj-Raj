@@ -704,11 +704,16 @@ async def _generate_daily_hr_leads(industry: str = "", city: str = ""):
     if city:
         focus += f" Prefer companies with hiring activity in or around {city}."
     prompt = (
-        "You are a recruitment lead-generation researcher. Suggest 3 DIFFERENT real, well-known companies "
-        "that are commonly hiring, and for each a senior HR / Talent Acquisition contact to target. "
+        "You are a recruitment lead-generation researcher for an Indian recruitment agency. "
+        "Suggest 3 DIFFERENT real MID-SIZED or SME (small & medium enterprise) companies BASED IN INDIA "
+        "that are commonly hiring. STRICT RULES: do NOT suggest large MNCs, Fortune-500, big IT majors "
+        "(e.g. TCS, Infosys, Wipro, Accenture, Amazon, Google) or global giants. Prefer growing Indian "
+        "companies with roughly 50-2000 employees across Indian cities. "
+        "For each company give a senior HR / Talent Acquisition contact to target. "
         "Return JSON fields per lead: company, domain (primary website domain like example.com), industry, "
-        "city, title (senior HR/TA role), hr_name (a plausible contact name to look for - a suggestion to be "
-        "verified on LinkedIn, not confirmed data), email_pattern (like 'first.last'), note (one short outreach tip)."
+        "city (an Indian city), title (senior HR/TA role), hr_name (a plausible contact name to look for - a "
+        "suggestion to be verified on LinkedIn, not confirmed data), email_pattern (like 'first.last'), "
+        "note (one short outreach tip)."
         + focus +
         ' Respond ONLY as JSON: {"leads":[{...},{...},{...}]}'
     )
