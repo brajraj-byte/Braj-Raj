@@ -1,0 +1,31 @@
+# Career Buddha — Powerful Intervention (PRD)
+
+## Original Problem Statement
+Recruitment Tracking System for a recruitment agency. One admin console (owner email braj.raj@careerbuddha.in) with first-login password reset. Admin creates/assigns multiple team members, each reachable via a unique invite URL, sees online/offline status, and can delete members. Per-user tabs: Parse Resume (AI parsing into a shared searchable candidate DB with downloadable resumes and 17 fields incl. photo), Client Details, Business Development (leads + AI HR suggestions), Joining Details (user + admin visibility), Advanced Search (download resumes), Celebrations (birthdays/anniversaries of team + candidates with present employer). Feature upgrade toggles for admin. Elegant professional white UI with the Career Buddha Buddha logo and warm saffron accents.
+
+## Architecture
+- Frontend: Vite + React 19 + Tailwind v4 + shadcn/ui. Token (JWT) in localStorage `cb_token`. AuthContext + heartbeat (30s). Tabs in Dashboard.
+- Backend: FastAPI + MongoDB (motor). Modules: server.py (routes), auth_utils.py (JWT/bcrypt), parsing.py (Gemini resume parsing + photo extraction), storage_utils.py (Emergent Object Storage), email_utils.py (Resend invite emails + safety gate).
+- Integrations: Emergent Universal LLM key → Gemini 2.5 Flash (resume parse + BD suggestions); Emergent Object Storage (resume/photo files); Emergent-managed Resend (invite emails); Emergent-managed Google sign-in (alternate login).
+
+## User Personas
+- Admin/Owner (Braj Raj): manages team, access links, feature flags, sees everything.
+- Team Member/Recruiter: parses resumes, manages clients/BD/joinings, searches shared DB.
+
+## Core Requirements (static)
+1. Single admin, first-login password reset. 2. Invite-URL onboarding for members. 3. Online/offline (heartbeat). 4. Delete members. 5. Shared candidate DB from AI parsing (17 fields). 6. Downloadable resumes. 7. Clients, BD (+AI), Joinings (scoped), Advanced Search, Celebrations. 8. Feature upgrade toggles. 9. White + saffron professional theme with logo.
+
+## Implemented (2026-10-01)
+- Custom email/password JWT auth + forced first-login password reset + Emergent Google sign-in (owner email auto-provisioned as admin; others must be invited).
+- Admin Console: create member (unique invite link + emailed via Resend), list with live online/offline/invited status, copy/regenerate invite, delete member, 8 feature toggles.
+- Parse Resume: PDF/DOCX upload → Gemini extracts 17 fields + best-effort photo → stored in Object Storage + shared candidate DB.
+- Candidate Database: shared, instant search, view detail, download resume.
+- Client Details CRUD; Business Development leads CRUD + AI HR suggestions; Joining Details (member sees own, admin sees all); Advanced multi-field Search + download; Celebrations (team + candidates, birthdays/anniversaries, present company).
+- Verified: 36/36 backend tests + frontend smoke all pass.
+
+## Backlog / Remaining
+- P1: Return 404 on PUT/DELETE of missing resources; login brute-force lockout; explicit CORS origins.
+- P2: Split server.py into per-module routers; scheduled daily celebration/BD follow-up email digests; candidate photo manual upload fallback.
+
+## Next Tasks
+- Await user feedback after first login; implement scheduled reminders if desired.
