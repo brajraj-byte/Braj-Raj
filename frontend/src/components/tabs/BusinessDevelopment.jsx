@@ -74,7 +74,7 @@ export default function BusinessDevelopment({ features }) {
                   {aiResult && (
                     <div className="space-y-2 pt-2">
                       {(aiResult.suggestions || []).map((s, i) => (
-                        <div key={i} className="border border-orange-100 bg-orange-50/50 rounded-lg p-3" data-testid={`ai-suggestion-${i}`}>
+                        <div key={`${s.title}-${i}`} className="border border-orange-100 bg-orange-50/50 rounded-lg p-3" data-testid={`ai-suggestion-${i}`}>
                           <p className="font-semibold text-slate-900 text-sm">{s.title}</p>
                           {s.likely_email_pattern && <p className="text-xs text-slate-500 mt-0.5">Email pattern: <span className="font-mono">{s.likely_email_pattern}</span></p>}
                           {s.outreach_tip && <p className="text-xs text-slate-600 mt-1">{s.outreach_tip}</p>}

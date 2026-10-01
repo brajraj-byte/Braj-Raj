@@ -110,7 +110,7 @@ export default function ParseResume() {
         {files.length > 0 && (
           <div className="mt-4 space-y-2" data-testid="selected-files">
             {files.map((f, i) => (
-              <div key={i} className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-sm">
+              <div key={`${f.name}-${f.size}-${i}`} className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-sm">
                 <FileText className="h-4 w-4 text-orange-500 shrink-0" />
                 <span className="truncate flex-1 text-slate-700">{f.name}</span>
                 {!parsing && <button onClick={() => removeFile(i)} className="text-slate-400 hover:text-red-500" data-testid={`remove-file-${i}`}><X className="h-4 w-4" /></button>}
@@ -137,7 +137,7 @@ export default function ParseResume() {
             {job.results?.length > 0 && (
               <div className="mt-3 space-y-1.5 max-h-56 overflow-y-auto">
                 {job.results.map((r, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm" data-testid={`bulk-result-${i}`}>
+                  <div key={`${r.filename}-${i}`} className="flex items-center gap-2 text-sm" data-testid={`bulk-result-${i}`}>
                     {r.status === "done"
                       ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                       : <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />}

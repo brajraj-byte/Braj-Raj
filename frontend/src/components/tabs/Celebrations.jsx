@@ -42,7 +42,7 @@ export default function Celebrations() {
   const Section = ({ title, list }) => list.length > 0 && (
     <div className="space-y-3">
       <h3 className="font-heading text-lg font-semibold text-slate-900">{title}</h3>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{list.map((c, i) => <Item key={i} c={c} />)}</div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{list.map((c, i) => <Item key={`${c.type}-${c.name}-${c.ddmm}-${i}`} c={c} />)}</div>
     </div>
   );
 

@@ -37,7 +37,7 @@ export default function CandidateDetailDialog({ candidate, open, onOpenChange })
             <p className="text-sm text-slate-500">{c.designation || "—"}{c.present_company ? ` · ${c.present_company}` : ""}</p>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {(c.skill_sets || []).slice(0, 8).map((s, i) => (
-                <Badge key={i} variant="secondary" className="bg-orange-50 text-orange-700 border border-orange-100 font-medium">{s}</Badge>
+                <Badge key={`${s}-${i}`} variant="secondary" className="bg-orange-50 text-orange-700 border border-orange-100 font-medium">{s}</Badge>
               ))}
             </div>
           </div>

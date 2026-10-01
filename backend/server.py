@@ -570,9 +570,12 @@ async def download_file(path: str = Query(...), auth: Optional[str] = Query(None
         decode_token(token)
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
+    data, ctype = None, None
     try:
         data, ctype = get_object(path)
     except Exception:
+        raise HTTPException(status_code=404, detail="File not found")
+    if data is None:
         raise HTTPException(status_code=404, detail="File not found")
     is_img = ctype.startswith("image/")
     if is_img:

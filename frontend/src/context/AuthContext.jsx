@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    try { await api.post("/auth/logout"); } catch {}
+    try { await api.post("/auth/logout"); } catch (e) { console.warn("logout notify failed", e); }
     localStorage.removeItem("cb_token");
     setUser(false);
   };
@@ -61,7 +61,9 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.get("/auth/me");
       setUser(data);
-    } catch {}
+    } catch (e) {
+      console.warn("refreshMe failed", e);
+    }
   };
 
   return (

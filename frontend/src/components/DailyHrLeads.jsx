@@ -85,7 +85,7 @@ export default function DailyHrLeads({ onTracked }) {
       ) : (
         <div className="grid md:grid-cols-3 gap-4 mt-4">
           {leads.map((l, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col" data-testid={`daily-lead-${i}`}>
+            <div key={`${l.company}-${i}`} className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col" data-testid={`daily-lead-${i}`}>
               <div className="flex items-center gap-2 mb-1">
                 <Building2 className="h-4 w-4 text-orange-500" />
                 <span className="font-semibold text-slate-900 text-sm">{l.company}</span>

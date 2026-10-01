@@ -46,7 +46,7 @@ export default function AdminDailyLeads() {
               <AccordionContent>
                 <div className="grid md:grid-cols-3 gap-3 pt-1">
                   {r.leads.map((l, i) => (
-                    <div key={i} className="border border-slate-200 rounded-lg p-3">
+                    <div key={`${l.company}-${i}`} className="border border-slate-200 rounded-lg p-3">
                       <p className="font-semibold text-slate-900 text-sm">{l.company}</p>
                       <p className="text-sm text-slate-700">{l.hr_name || "HR contact"}</p>
                       <p className="text-xs text-slate-500">{l.title}{l.city ? ` · ${l.city}` : ""}</p>
