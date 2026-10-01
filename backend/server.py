@@ -29,7 +29,7 @@ import storage_utils
 from storage_utils import put_object, get_object, APP_NAME, MIME_TYPES
 import parsing
 import httpx
-from email_utils import send_email, invite_email_html
+from email_utils import send_email, invite_email_html, user_mail_html
 
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
@@ -130,6 +130,16 @@ class JobTrackReq(BaseModel):
     present_location: Optional[str] = ""
     present_ctc: Optional[str] = ""
     notice_period: Optional[str] = ""
+
+
+class ChatReq(BaseModel):
+    text: str
+
+
+class MailReq(BaseModel):
+    to: EmailStr
+    subject: Optional[str] = ""
+    body: str
 
 
 # ---------- Helpers ----------
@@ -358,7 +368,7 @@ async def regenerate_invite(member_id: str, user: dict = Depends(current_user)):
 FEATURE_DEFAULTS = {
     "parse_resume": True, "candidate_db": True, "client_details": True,
     "business_development": True, "joining_details": True, "advanced_search": True,
-    "celebrations": True, "ai_bd_suggestions": True, "job_tracking": True,
+    "celebrations": True, "ai_bd_suggestions": True, "job_tracking": True, "mailer": True,
 }
 
 
@@ -957,6 +967,78 @@ async def celebrations(user: dict = Depends(current_user)):
                           "present_company": c.get("present_company")})
     items.sort(key=lambda x: x["days_until"])
     return items
+
+
+# ---------- Team Messenger ----------
+@api.get("/chat/presence")
+async def chat_presence(user: dict = Depends(current_user)):
+    users = await db.users.find({"status": "active"}).to_list(500)
+    order = {"online": 0, "away": 1, "dormant": 2, "offline": 3}
+    out = []
+    for u in users:
+        ls = u.get("last_seen")
+        state = "offline"
+        if ls:
+            try:
+                diff = (datetime.now(timezone.utc) - datetime.fromisoformat(ls)).total_seconds()
+                state = "online" if diff < 120 else ("dormant" if diff >= 1800 else "away")
+            except Exception:
+                state = "offline"
+        out.append({"id": str(u["_id"]), "name": u.get("name"), "role": u.get("role"),
+                    "state": state, "self": str(u["_id"]) == user["id"]})
+    out.sort(key=lambda x: (order.get(x["state"], 9), (x["name"] or "").lower()))
+    return out
+
+
+@api.get("/chat/messages")
+async def chat_messages(since: Optional[str] = None, user: dict = Depends(current_user)):
+    q = {}
+    if since:
+        q["created_at"] = {"$gt": since}
+    docs = await db.messages.find(q).sort("created_at", -1).to_list(80)
+    docs.reverse()
+    return [{k: v for k, v in d.items() if k != "_id"} for d in docs]
+
+
+@api.post("/chat/messages")
+async def chat_send(req: ChatReq, user: dict = Depends(current_user)):
+    text = (req.text or "").strip()[:2000]
+    if not text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    doc = {"id": str(uuid.uuid4()), "text": text, "sender_id": user["id"],
+           "sender_name": user.get("name"), "created_at": now_iso()}
+    await db.messages.insert_one(dict(doc))
+    await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": {"last_seen": now_iso()}})
+    doc.pop("_id", None)
+    return doc
+
+
+# ---------- In-app Mailer ----------
+@api.post("/mail/send")
+async def mail_send(req: MailReq, user: dict = Depends(current_user)):
+    body = (req.body or "").strip()
+    subject = (req.subject or "").strip() or "(no subject)"
+    if not body:
+        raise HTTPException(status_code=400, detail="Message body cannot be empty")
+    sender_name = user.get("name") or "A colleague"
+    sender_email = user.get("email")
+    html = user_mail_html(body, sender_name, sender_email)
+    msg_id = await send_email(to=str(req.to), subject=subject, html=html,
+                              from_name=f"{sender_name} (via Career Buddha 360 Suite)", reply_to=sender_email)
+    status = "sent" if msg_id else "failed"
+    log = {"id": str(uuid.uuid4()), "from_id": user["id"], "from_email": sender_email,
+           "to": str(req.to), "subject": subject, "body": body, "status": status, "created_at": now_iso()}
+    await db.mail_log.insert_one(dict(log))
+    log.pop("_id", None)
+    if status == "failed":
+        raise HTTPException(status_code=502, detail="Email could not be sent right now. Please try again.")
+    return log
+
+
+@api.get("/mail/sent")
+async def mail_sent(user: dict = Depends(current_user)):
+    docs = await db.mail_log.find({"from_id": user["id"]}).sort("created_at", -1).to_list(100)
+    return [{k: v for k, v in d.items() if k != "_id"} for d in docs]
 
 
 app.include_router(api)

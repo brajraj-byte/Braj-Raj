@@ -10,11 +10,13 @@ import BusinessDevelopment from "@/components/tabs/BusinessDevelopment";
 import JoiningDetails from "@/components/tabs/JoiningDetails";
 import SearchTab from "@/components/tabs/SearchTab";
 import Celebrations from "@/components/tabs/Celebrations";
+import Mailer from "@/components/tabs/Mailer";
 import JobTracking from "@/components/tabs/JobTracking";
 import AdminConsole from "@/components/tabs/AdminConsole";
+import ChatWidget from "@/components/ChatWidget";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown, ListChecks } from "lucide-react";
+import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown, ListChecks, Mail } from "lucide-react";
 
 const TABS = [
   { key: "parse_resume", label: "Parse Resume", icon: FileText, comp: ParseResume },
@@ -25,6 +27,7 @@ const TABS = [
   { key: "job_tracking", label: "Job Tracking", icon: ListChecks, comp: JobTracking },
   { key: "advanced_search", label: "Search", icon: Search, comp: SearchTab },
   { key: "celebrations", label: "Celebrations", icon: Cake, comp: Celebrations },
+  { key: "mailer", label: "Mail", icon: Mail, comp: Mailer },
 ];
 
 export default function Dashboard() {
@@ -111,6 +114,8 @@ export default function Dashboard() {
           ? <AdminConsole features={features} setFeatures={setFeatures} />
           : <ActiveComp {...extraProps} />}
       </main>
+
+      <ChatWidget />
     </div>
   );
 }

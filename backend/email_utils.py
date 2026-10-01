@@ -87,14 +87,15 @@ def _assert_safe_email(subject: str, html: str) -> None:
                 raise ValueError(f"Anchor text {m.group(1)!r} != real link host {real!r} (G3)")
 
 
-async def send_email(*, to: str, subject: str, html: str) -> str | None:
+async def send_email(*, to: str, subject: str, html: str, from_name: str = None, reply_to: str = None) -> str | None:
     _assert_safe_email(subject, html)
     if not EMAIL_KEY:
         logger.warning("EMERGENT_EMAIL_KEY not set; skipping email send")
         return None
-    payload = {"to": [to], "subject": subject, "html": html, "from_name": EMAIL_FROM_NAME}
-    if EMAIL_REPLY_TO:
-        payload["contact_email"] = EMAIL_REPLY_TO
+    payload = {"to": [to], "subject": subject, "html": html, "from_name": from_name or EMAIL_FROM_NAME}
+    rt = reply_to or EMAIL_REPLY_TO
+    if rt:
+        payload["contact_email"] = rt
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(
@@ -107,6 +108,20 @@ async def send_email(*, to: str, subject: str, html: str) -> str | None:
     except Exception as e:
         logger.error(f"Email send error: {e}")
         return None
+
+
+def user_mail_html(body: str, sender_name: str, sender_email: str) -> str:
+    safe_body = escape(body or "").replace("\n", "<br>")
+    return (
+        '<table role="presentation" width="100%" style="background:#f8fafc;padding:24px"><tr><td align="center">'
+        '<table role="presentation" width="560" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;font-family:Arial,Helvetica,sans-serif">'
+        '<tr><td style="padding:24px 28px">'
+        f'<div style="font-size:14px;color:#0f172a;line-height:1.6">{safe_body}</div>'
+        '<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">'
+        f'<p style="font-size:12px;color:#64748b;margin:0">Sent by {escape(sender_name or "")} ({escape(sender_email or "")}) via Career Buddha 360 Suite.</p>'
+        '<p style="font-size:11px;color:#94a3b8;margin:6px 0 0">Reply directly to reach the sender.</p>'
+        '</td></tr></table></td></tr></table>'
+    )
 
 
 def invite_email_html(name: str, invite_url: str) -> str:

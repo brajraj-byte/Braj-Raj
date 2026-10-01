@@ -1,0 +1,24 @@
+{
+  "summary": "Verified DD/MM invite activation bug fix. Added /app/backend/tests/test_ddmm_invite.py (7 tests, all PASS) covering: GET /api/auth/invite/{token}, POST /api/auth/accept-invite with DD/MM dob+anniversary (persists raw strings and returns token), /api/auth/me reflects date_of_birth=15/08 & work_anniversary=01/04, GET /api/celebrations returns new member birthday+anniversary with ddmm=15/08 and 01/04, member can login with new password, admin login regression, candidate ddmm still valid /^\\d{2}\\/\\d{2}$/, invalid 99/99 stored but produces NO celebrations entry (parser returns None). Playwright UI test on https://hr-powerhouse.preview.emergentagent.com/invite/{token}: typing '1508' auto-formats to '15/08' via onDDMM handler; typing '9999' into anniversary and submitting shows red error 'Work anniversary must be in DD/MM format (e.g. 01/04)' (submission blocked, no network call); clearing invalid value then entering '0104' and submitting activates the account, cb_token stored in localStorage, redirects to dashboard '/' as the new member; Celebrations tab shows new member cards with 01/04 (Work Anniversary) and 15/08 (Birthday) alongside candidate cards 13/06 and 14/06. All data-testid attributes (invite-password-input, invite-confirm-input, invite-dob-input, invite-anniversary-input, invite-submit-button) are present and used. TEST_ members were deleted via DELETE /api/admin/members/{id} at end of each test. No regressions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_ddmm_invite.py",
+    "/app/test_reports/pytest/ddmm_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "AcceptInvite.jsx onDDMM auto-insert only triggers at length>=3, so user cannot delete the '/' once inserted without clearing all digits (keyboard backspace on '15/' removes '/' but next keystroke re-inserts). Minor UX nit, not a bug.",
+    "Backend accepts and stores ANY string in date_of_birth/work_anniversary (e.g. '99/99' silently stored). Frontend validates, but direct API callers can POST garbage. Consider server-side DD/MM validation in /auth/accept-invite.",
+    "/api/files still accepts bearer via ?auth= query param (carried over from prior iteration — token exposed in logs).",
+    "No rate limiting on /api/auth/login."
+  ],
+  "updated_files": ["/app/backend/tests/test_ddmm_invite.py (new)"],
+  "success_rate": {"backend": "100% (7/7 new + prior 53/53 still green when run separately)", "frontend": "100%"},
+  "test_credentials": "Admin: braj.raj@careerbuddha.in / CareerBuddha@2026. New members created per-test (TEST_ddmm_* / TEST_ui_*) with password MemberPass@2026, deleted after.",
+  "seed_data_creation": "All TEST_ members created during this run were deleted via DELETE /api/admin/members/{id}. No leftover seed data.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "DD/MM invite activation fully verified end-to-end. New test file test_ddmm_invite.py. Run with -n 0 to match existing pattern. Server-side still trusts invite-time DD/MM strings — consider adding a server-side validator if this is important.",
+  "rca of the issue": "Original bug: AcceptInvite used native date pickers (type=date) which force a full date and don't accept DD/MM. Fix (verified): changed Birthday & Anniversary inputs to type=text with onDDMM auto-slash handler, validDDMM regex (01-31 / 01-12), maxLength=5, inputMode=numeric. Backend _parse_day_month now includes '%d/%m' / '%m/%d', and /api/celebrations formats ddmm as f'{day:02d}/{month:02d}' so DD/MM strings flow unchanged through the pipeline. All 7 backend + Playwright UI assertions pass."
+}
