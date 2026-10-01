@@ -18,6 +18,7 @@ const FEATURE_LABELS = {
 
 export default function AdminConsole({ features, setFeatures }) {
   const [members, setMembers] = useState([]);
+  const fmt = (s) => (s ? new Date(s).toLocaleString() : "—");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "" });
   const [creating, setCreating] = useState(false);
@@ -108,6 +109,14 @@ export default function AdminConsole({ features, setFeatures }) {
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200" data-testid={`member-status-invited-${m.id}`}>Invited</span>
                 )}
               </div>
+
+              {m.status === "active" && (
+                <div className="mt-3 text-[11px] text-slate-400 space-y-0.5 border-t border-slate-100 pt-2">
+                  <p data-testid={`member-login-${m.id}`}>🟢 Logged in: <span className="text-slate-600">{fmt(m.last_login)}</span></p>
+                  <p data-testid={`member-logout-${m.id}`}>⚪ Logged off: <span className="text-slate-600">{fmt(m.last_logout)}</span></p>
+                  <p>Last active: <span className="text-slate-600">{fmt(m.last_seen)}</span></p>
+                </div>
+              )}
 
               {m.status === "invited" && m.invite_token && (
                 <div className="mt-3 flex items-center gap-2 bg-slate-50 rounded-lg p-2 border border-slate-100">

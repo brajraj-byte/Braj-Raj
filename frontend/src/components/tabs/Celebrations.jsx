@@ -20,7 +20,7 @@ const Item = ({ c }) => {
         <div className="text-right shrink-0">
           {c.days_until === 0 ? <Badge className="bg-orange-600 text-white">Today! 🎉</Badge>
             : <span className="text-xs text-slate-500">in {c.days_until}d</span>}
-          <p className="text-[11px] text-slate-400 mt-1">{c.date}</p>
+          <p className="text-[11px] text-slate-400 mt-1">{c.ddmm || c.date}</p>
         </div>
       </div>
     </Card>

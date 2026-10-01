@@ -152,6 +152,8 @@ def member_public(u, backend_url):
         "status": u.get("status", "invited"),
         "online": is_online(u.get("last_seen")),
         "last_seen": u.get("last_seen"),
+        "last_login": u.get("last_login"),
+        "last_logout": u.get("last_logout"),
         "created_at": u.get("created_at"),
         "mobile": u.get("mobile", ""),
         "date_of_birth": u.get("date_of_birth", ""),
@@ -176,7 +178,7 @@ async def login(req: LoginReq):
         raise HTTPException(status_code=401, detail="Please activate your account via your invite link first")
     if not verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_seen": now_iso()}})
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_seen": now_iso(), "last_login": now_iso()}})
     token = create_access_token(str(user["_id"]), email, user["role"])
     return {
         "token": token,
@@ -233,6 +235,7 @@ async def accept_invite(req: AcceptInviteReq):
         "invite_token": None,
         "must_change_password": False,
         "last_seen": now_iso(),
+        "last_login": now_iso(),
         "date_of_birth": req.date_of_birth or "",
         "work_anniversary": req.work_anniversary or "",
         "mobile": req.mobile or "",
@@ -278,7 +281,7 @@ async def google_session(payload: dict):
             raise HTTPException(status_code=403, detail="This Google account is not authorized. Please ask your admin for an invite.")
     await db.users.update_one(
         {"_id": user["_id"]},
-        {"$set": {"last_seen": now_iso(), "status": "active", "invite_token": None}},
+        {"$set": {"last_seen": now_iso(), "last_login": now_iso(), "status": "active", "invite_token": None}},
     )
     token = create_access_token(str(user["_id"]), email, user["role"])
     return {"token": token, "user": {"id": str(user["_id"]), "name": user.get("name"), "email": email,
@@ -288,6 +291,12 @@ async def google_session(payload: dict):
 @api.post("/heartbeat")
 async def heartbeat(user: dict = Depends(current_user)):
     await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": {"last_seen": now_iso()}})
+    return {"ok": True}
+
+
+@api.post("/auth/logout")
+async def logout_endpoint(user: dict = Depends(current_user)):
+    await db.users.update_one({"_id": ObjectId(user["id"])}, {"$set": {"last_logout": now_iso()}})
     return {"ok": True}
 
 
@@ -919,12 +928,14 @@ async def celebrations(user: dict = Depends(current_user)):
         if dm:
             days, date = _days_until(*dm)
             items.append({"type": "Birthday", "who": "Team Member", "name": m.get("name"),
-                          "sub": m.get("email"), "days_until": days, "date": date, "present_company": "Career Buddha"})
+                          "sub": m.get("email"), "days_until": days, "date": date,
+                          "ddmm": f"{dm[1]:02d}/{dm[0]:02d}", "present_company": "Career Buddha 360 Suite"})
         dm = _parse_day_month(m.get("work_anniversary"))
         if dm:
             days, date = _days_until(*dm)
             items.append({"type": "Work Anniversary", "who": "Team Member", "name": m.get("name"),
-                          "sub": m.get("email"), "days_until": days, "date": date, "present_company": "Career Buddha"})
+                          "sub": m.get("email"), "days_until": days, "date": date,
+                          "ddmm": f"{dm[1]:02d}/{dm[0]:02d}", "present_company": "Career Buddha 360 Suite"})
     cands = await db.candidates.find({"is_deleted": {"$ne": True}}).to_list(2000)
     for c in cands:
         dm = _parse_day_month(c.get("date_of_birth"))
@@ -932,6 +943,7 @@ async def celebrations(user: dict = Depends(current_user)):
             days, date = _days_until(*dm)
             items.append({"type": "Birthday", "who": "Candidate", "name": c.get("name"),
                           "sub": c.get("designation"), "days_until": days, "date": date,
+                          "ddmm": f"{dm[1]:02d}/{dm[0]:02d}",
                           "present_company": c.get("present_company")})
     items.sort(key=lambda x: x["days_until"])
     return items

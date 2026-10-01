@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import "@/App.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { api, apiError } from "@/lib/api";
 import Login from "@/pages/Login";
 import AcceptInvite from "@/pages/AcceptInvite";
@@ -84,6 +85,7 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRouter />
+          <OfflineBanner />
           <Toaster position="top-right" richColors />
         </AuthProvider>
       </BrowserRouter>

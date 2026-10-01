@@ -51,7 +51,8 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try { await api.post("/auth/logout"); } catch {}
     localStorage.removeItem("cb_token");
     setUser(false);
   };

@@ -1,0 +1,19 @@
+{
+  "name": "Career Buddha 360 Suite",
+  "short_name": "CB 360 Suite",
+  "description": "Career Buddha 360 Suite — recruitment tracking: resume parsing, shared candidate database, clients, business development, job tracking and celebrations.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "icons": [
+    {
+      "src": "https://customer-assets-agu9un31.emergentagent.net/job_4e45751c-900a-49ef-ad88-cf7eeb2e4623/artifacts/8vjrpk1j_Logo-scale-1.PNG",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
