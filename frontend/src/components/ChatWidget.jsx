@@ -17,10 +17,10 @@ export default function ChatWidget() {
   const endRef = useRef(null);
 
   const loadMessages = useCallback(async () => {
-    try { const { data } = await api.get("/chat/messages"); setMessages(data); } catch (e) { /* offline */ }
+    try { const { data } = await api.get("/chat/messages"); setMessages(data); } catch (e) { console.debug("chat messages fetch failed (offline?)", e); }
   }, []);
   const loadPresence = useCallback(async () => {
-    try { const { data } = await api.get("/chat/presence"); setPresence(data); } catch (e) { /* offline */ }
+    try { const { data } = await api.get("/chat/presence"); setPresence(data); } catch (e) { console.debug("chat presence fetch failed (offline?)", e); }
   }, []);
 
   useEffect(() => {

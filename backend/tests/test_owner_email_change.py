@@ -2,11 +2,14 @@
 import os
 import pytest
 import requests
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://hr-powerhouse.preview.emergentagent.com").rstrip("/")
-OWNER_EMAIL = "braj.raj@careerbuddha.in"
-OWNER_PASSWORD = "CareerBuddha@2026"
+OWNER_EMAIL = os.environ.get("ADMIN_EMAIL", "braj.raj@careerbuddha.in")
+OWNER_PASSWORD = os.environ["ADMIN_PASSWORD"]
 OLD_GMAIL = "brajraj.2505@gmail.com"
 
 
