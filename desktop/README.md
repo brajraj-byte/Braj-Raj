@@ -39,9 +39,14 @@ This produces a real `Setup .exe` installer with the Career Buddha icon embedded
 via GitHub Actions):
 
 1. In Emergent, use **"Save to GitHub"** to push this project.
-2. On GitHub: **Actions → "Build Windows Desktop App" → Run workflow**.
-3. When done, open the run and download the **CareerBuddha360Suite-Installer**
-   artifact — it contains the installer `.exe` you can share with your team.
+2. On GitHub: **Actions → "Build Windows Desktop App" → Run workflow**
+   (leave **publish = true**).
+3. The build creates a **GitHub Release `v1.0.0`** with the installer `.exe`
+   (and the `latest.yml` auto-update feed). Download the `.exe` from the Release
+   — or from the run's **CareerBuddha360Suite-Installer** artifact — and share it.
+
+> No tag push required: `electron-builder` creates the Release automatically from
+> the `version` in `desktop/package.json` using the built-in `GITHUB_TOKEN`.
 
 ### Auto-update (keeps the team on the latest version)
 The app checks GitHub Releases on launch and installs updates automatically
@@ -49,11 +54,33 @@ The app checks GitHub Releases on launch and installs updates automatically
 
 To ship an update everyone receives automatically:
 1. Bump `"version"` in `desktop/package.json` (e.g. `1.0.1`).
-2. Commit, then push a tag starting with `desktop-v` (e.g. `desktop-v1.0.1`).
-3. The workflow builds and **publishes a GitHub Release**. Installed apps detect
-   it on next launch, download in the background, and prompt the user to restart.
+2. Save to GitHub, then run the **"Build Windows Desktop App"** workflow again
+   (publish = true).
+3. It publishes Release `v1.0.1`. Installed apps detect it on next launch,
+   download in the background, and prompt the user to restart.
 
 > Auto-update works only with the installer (Option B), not the portable ZIP.
+
+### Code signing (optional — removes the "unknown publisher" warning)
+Windows SmartScreen shows an "unknown publisher" warning for unsigned apps. To
+remove it you need a real **code-signing certificate** from a trusted CA
+(e.g. DigiCert, Sectigo, SSL.com). A self-signed cert does **not** remove the
+warning. Options: a standard **OV** certificate (cheaper) or an **EV**
+certificate (instant SmartScreen reputation; usually ships on a hardware token).
+
+Once you have a `.pfx` certificate file:
+1. Base64-encode it:
+   - macOS/Linux: `base64 -w0 your-cert.pfx > cert.txt`
+   - Windows PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("your-cert.pfx")) | Set-Clipboard`
+2. In the GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**:
+   - `CSC_LINK` = the base64 string from step 1
+   - `CSC_KEY_PASSWORD` = the certificate password
+3. Re-run the **"Build Windows Desktop App"** workflow. It now signs the
+   installer automatically. No secrets = unsigned build (still works).
+
+> EV certificates on hardware tokens can't be used in standard cloud CI; those
+> require signing on a machine with the token attached (run the local build
+> command below on that machine).
 
 ### Build locally on a Windows PC (alternative)
 ```

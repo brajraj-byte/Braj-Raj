@@ -6,12 +6,23 @@ name: Build Windows Desktop App
 #
 # How to use:
 # 1. Push this repo to GitHub (use "Save to GitHub" in Emergent).
-# 2. Go to the repo -> Actions -> "Build Windows Desktop App" -> Run workflow.
-# 3. When it finishes, open the run and download the "CareerBuddha360Suite-Installer"
-#    artifact. Inside is the installer .exe you can share with your team.
+# 2. Repo -> Actions -> "Build Windows Desktop App" -> Run workflow.
+#    - Leave "publish" = true to create a GitHub Release (enables auto-update).
+# 3. Download the installer from the published Release (or from the run's
+#    "CareerBuddha360Suite-Installer" artifact) and share it with your team.
+#
+# Code signing (optional, removes the "unknown publisher" warning):
+#   Add repo secrets CSC_LINK (base64 of your .pfx certificate) and
+#   CSC_KEY_PASSWORD (its password). When present, the build signs the
+#   installer automatically. Without them, the build still succeeds unsigned.
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish a GitHub Release (enables auto-update)"
+        type: boolean
+        default: true
   push:
     tags:
       - "desktop-v*"
@@ -35,9 +46,11 @@ jobs:
         run: npm install
 
       - name: Build Windows installer
-        run: npx electron-builder --win --x64 --publish ${{ github.ref_type == 'tag' && 'always' || 'never' }}
+        run: npx electron-builder --win --x64 --publish ${{ (github.ref_type == 'tag' || github.event.inputs.publish == 'true') && 'always' || 'never' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
