@@ -35,9 +35,15 @@ export default function Dashboard() {
   const [active, setActive] = useState("parse_resume");
   const [features, setFeatures] = useState({});
   const [pwOpen, setPwOpen] = useState(false);
+  const [desktopUrl, setDesktopUrl] = useState(`${API}/desktop/windows`);
 
   const loadFeatures = useCallback(() => { api.get("/features").then(({ data }) => setFeatures(data)).catch(() => {}); }, []);
   useEffect(() => { loadFeatures(); }, [loadFeatures]);
+  useEffect(() => {
+    api.get("/desktop/latest").then(({ data }) => {
+      if (data?.type === "installer" && data.url) setDesktopUrl(data.url);
+    }).catch(() => {});
+  }, []);
 
   const isAdmin = user?.role === "admin";
   const forcedPw = user?.must_change_password;
@@ -61,7 +67,7 @@ export default function Dashboard() {
           <Logo />
           <div className="flex items-center gap-3">
             <a
-              href={`${API}/desktop/windows`}
+              href={desktopUrl}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 transition-colors shadow-sm"
               data-testid="install-desktop-app-button"
               title="Download the Career Buddha desktop app for Windows"

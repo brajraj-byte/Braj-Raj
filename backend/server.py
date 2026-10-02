@@ -1058,6 +1058,22 @@ async def download_desktop_windows():
     )
 
 
+GITHUB_REPO = os.environ.get("GITHUB_REPO", "").strip()
+INSTALLER_ASSET = "CareerBuddha360Suite-Setup.exe"
+
+
+@api.get("/desktop/latest")
+async def desktop_latest():
+    # Points the "Install App" button at the newest signed installer when a
+    # GitHub repo is configured; otherwise the frontend falls back to the ZIP.
+    if GITHUB_REPO:
+        return {
+            "type": "installer",
+            "url": f"https://github.com/{GITHUB_REPO}/releases/latest/download/{INSTALLER_ASSET}",
+        }
+    return {"type": "portable", "url": None}
+
+
 app.include_router(api)
 
 app.add_middleware(

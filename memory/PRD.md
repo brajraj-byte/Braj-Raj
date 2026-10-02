@@ -38,4 +38,6 @@ Recruitment Tracking System for a recruitment agency. One admin console (owner e
 - NOTE: main.js APP_URL now points to PRODUCTION `https://careerbuddha.emergent.host`.
 - Desktop ZIP hosted in Emergent Object Storage (object path `desktop/CareerBuddha360Suite-Windows.zip`); route `GET /api/desktop/windows` streams it from storage (works in production). Upload script: `/app/scripts/upload_desktop_zip.py`.
 - Dashboard header has an "Install App" button (`install-desktop-app-button`) linking to the download. Requires a redeploy to appear in production.
-- electron-updater auto-update wired via `publish: github`; push `desktop-v*` tag to release.
+- electron-updater auto-update wired via `publish: github`; run the "Build Windows Desktop App" workflow with publish=true (no tag push needed) to publish Release v1.0.0. Fixed installer name `CareerBuddha360Suite-Setup.exe` (nsis.artifactName).
+- Code-signing wired in workflow via `CSC_LINK`/`CSC_KEY_PASSWORD` GitHub secrets (activates automatically when present; needs a real CA cert to remove SmartScreen warning).
+- Smart "Install App" button: frontend calls `GET /api/desktop/latest`; if env `GITHUB_REPO` (format owner/repo) is set it links to the latest GitHub Release installer, else falls back to `/api/desktop/windows` (ZIP). Set `GITHUB_REPO` in backend/.env + as a production secret to enable installer mode.

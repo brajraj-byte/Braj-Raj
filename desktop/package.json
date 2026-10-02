@@ -29,6 +29,7 @@
     },
     "nsis": {
       "oneClick": false,
+      "artifactName": "CareerBuddha360Suite-Setup.exe",
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,

@@ -89,3 +89,18 @@ npm install
 npx electron-builder --win --x64
 ```
 The installer is written to `desktop/release/`.
+
+---
+
+## Make the in-app "Install App" button use the installer
+The dashboard header has an **Install App** button. Until you publish a Release
+it downloads the portable ZIP. To make it point at the newest **signed installer**
+instead, set one env var so the backend returns the GitHub latest-release link:
+
+- `GITHUB_REPO` = `your-github-username/your-repo-name` (e.g. `brajraj/career-buddha`)
+
+Set it in `backend/.env` for preview, and add it as a **production secret** (same
+name) so it works on the live site too. The installer filename is fixed
+(`CareerBuddha360Suite-Setup.exe`), so the button always resolves to:
+`https://github.com/<GITHUB_REPO>/releases/latest/download/CareerBuddha360Suite-Setup.exe`
+— i.e. it automatically tracks the latest published version.
