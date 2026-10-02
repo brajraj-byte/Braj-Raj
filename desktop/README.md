@@ -34,13 +34,26 @@ No installation needed. Share the ZIP with team members the same way.
 ---
 
 ## Option B — Proper branded installer (recommended)
-This produces a real `Setup .exe` installer with the Career Buddha icon embedded.
-It must be built on Windows (done automatically via GitHub Actions):
+This produces a real `Setup .exe` installer with the Career Buddha icon embedded,
+**and enables in-app auto-update**. It must be built on Windows (done automatically
+via GitHub Actions):
 
 1. In Emergent, use **"Save to GitHub"** to push this project.
 2. On GitHub: **Actions → "Build Windows Desktop App" → Run workflow**.
 3. When done, open the run and download the **CareerBuddha360Suite-Installer**
    artifact — it contains the installer `.exe` you can share with your team.
+
+### Auto-update (keeps the team on the latest version)
+The app checks GitHub Releases on launch and installs updates automatically
+(`electron-updater`, configured via the `publish: github` block in package.json).
+
+To ship an update everyone receives automatically:
+1. Bump `"version"` in `desktop/package.json` (e.g. `1.0.1`).
+2. Commit, then push a tag starting with `desktop-v` (e.g. `desktop-v1.0.1`).
+3. The workflow builds and **publishes a GitHub Release**. Installed apps detect
+   it on next launch, download in the background, and prompt the user to restart.
+
+> Auto-update works only with the installer (Option B), not the portable ZIP.
 
 ### Build locally on a Windows PC (alternative)
 ```

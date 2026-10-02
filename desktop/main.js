@@ -1,5 +1,6 @@
-const { app, BrowserWindow, shell, Menu } = require('electron');
+const { app, BrowserWindow, shell, Menu, dialog } = require('electron');
 const path = require('path');
+const { autoUpdater } = require('electron-updater');
 
 // The web app this desktop wrapper opens.
 // Updated to the permanent production URL for the final build.
@@ -76,9 +77,36 @@ function buildMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+// Check GitHub Releases for a newer version and auto-install on quit.
+function initAutoUpdate() {
+  if (!app.isPackaged) return; // skip in dev / portable-from-source
+  autoUpdater.autoDownload = true;
+  autoUpdater.on('update-downloaded', (info) => {
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      buttons: ['Restart now', 'Later'],
+      defaultId: 0,
+      title: 'Update available',
+      message: `Career Buddha 360 Suite ${info.version} is ready.`,
+      detail: 'Restart to install the latest version.'
+    }).then((res) => {
+      if (res.response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+  autoUpdater.on('error', (err) => {
+    console.error('Auto-update error:', err == null ? 'unknown' : (err.message || err));
+  });
+  try {
+    autoUpdater.checkForUpdatesAndNotify();
+  } catch (e) {
+    console.error('checkForUpdates failed:', e);
+  }
+}
+
 app.whenReady().then(() => {
   buildMenu();
   createWindow();
+  initAutoUpdate();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

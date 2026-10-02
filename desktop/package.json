@@ -34,10 +34,16 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Career Buddha 360 Suite"
-    }
+    },
+    "publish": [
+      { "provider": "github" }
+    ]
   },
   "devDependencies": {
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   }
 }
