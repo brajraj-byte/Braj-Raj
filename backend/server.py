@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Request, UploadFile, File, Query, Header, BackgroundTasks
-from fastapi.responses import Response, FileResponse
+from fastapi.responses import Response
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, EmailStr, Field
@@ -1041,17 +1041,20 @@ async def mail_sent(user: dict = Depends(current_user)):
     return [{k: v for k, v in d.items() if k != "_id"} for d in docs]
 
 
-DESKTOP_WIN_ZIP = "/app/desktop/release/CareerBuddha360Suite-Windows.zip"
+DESKTOP_WIN_OBJECT = "desktop/CareerBuddha360Suite-Windows.zip"
 
 
 @api.get("/desktop/windows")
 async def download_desktop_windows():
-    if not os.path.exists(DESKTOP_WIN_ZIP):
+    from starlette.concurrency import run_in_threadpool
+    try:
+        content, _ = await run_in_threadpool(storage_utils.get_object, DESKTOP_WIN_OBJECT)
+    except Exception:
         raise HTTPException(status_code=404, detail="Desktop build not available")
-    return FileResponse(
-        DESKTOP_WIN_ZIP,
+    return Response(
+        content,
         media_type="application/zip",
-        filename="CareerBuddha360Suite-Windows.zip",
+        headers={"Content-Disposition": 'attachment; filename="CareerBuddha360Suite-Windows.zip"'},
     )
 
 
