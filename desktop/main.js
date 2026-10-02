@@ -4,7 +4,7 @@ const { autoUpdater } = require('electron-updater');
 
 // The web app this desktop wrapper opens.
 // Updated to the permanent production URL for the final build.
-const APP_URL = process.env.CB_APP_URL || 'https://hr-powerhouse.preview.emergentagent.com';
+const APP_URL = process.env.CB_APP_URL || 'https://careerbuddha.emergent.host';
 
 let mainWindow;
 
