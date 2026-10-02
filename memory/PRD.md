@@ -29,3 +29,10 @@ Recruitment Tracking System for a recruitment agency. One admin console (owner e
 
 ## Next Tasks
 - Await user feedback after first login; implement scheduled reminders if desired.
+
+## Desktop App (2026-06, this session)
+- Added `/app/desktop/` Electron wrapper (main.js, preload.js, package.json) opening the web app in a branded desktop window. Icon built from user's Career Buddha logo (build/icon.png + icon.ico).
+- Windows x64 portable build produced via electron-builder `--dir` (ARM64 container cannot run wine, so NSIS installer / exe-icon embedding not possible locally; win-unpacked packed before the sign step).
+- Backend download route `GET /api/desktop/windows` streams `/app/desktop/release/CareerBuddha360Suite-Windows.zip` (118 MB). Tested via curl (200, application/zip). Build artifacts gitignored.
+- `.github/workflows/build-windows.yml`: GitHub Actions on windows-latest to build the proper branded NSIS installer .exe (recommended polished option).
+- NOTE: main.js APP_URL currently points to PREVIEW url; must be repointed to PRODUCTION url and rebuilt once deployment completes.

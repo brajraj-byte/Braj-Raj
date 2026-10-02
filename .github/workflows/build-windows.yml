@@ -1,0 +1,47 @@
+name: Build Windows Desktop App
+
+# Builds the Career Buddha 360 Suite Windows installer (.exe) on a real
+# Windows runner — this produces a proper NSIS installer with the branded
+# icon embedded (not possible on the Linux/ARM build container).
+#
+# How to use:
+# 1. Push this repo to GitHub (use "Save to GitHub" in Emergent).
+# 2. Go to the repo -> Actions -> "Build Windows Desktop App" -> Run workflow.
+# 3. When it finishes, open the run and download the "CareerBuddha360Suite-Installer"
+#    artifact. Inside is the installer .exe you can share with your team.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "desktop-v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows installer
+        run: npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CareerBuddha360Suite-Installer
+          path: desktop/release/*.exe
+          if-no-files-found: error
