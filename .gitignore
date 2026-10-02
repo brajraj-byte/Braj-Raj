@@ -90,3 +90,9 @@ Buddha
 Suite/Career
 Suite.exe
 desktop/node_modules/electron/dist/electron
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
