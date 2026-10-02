@@ -30,6 +30,11 @@ Recruitment Tracking System for a recruitment agency. One admin console (owner e
 ## Next Tasks
 - Await user feedback after first login; implement scheduled reminders if desired.
 
+## Code Review Pass (2026-06)
+- Applied: removed hardcoded admin password from `tests/test_owner_email_change.py` & `tests/test_ddmm_invite.py` (now read `ADMIN_PASSWORD`/`ADMIN_EMAIL` via dotenv); added `console.debug` logging to the two previously-silent catch blocks in `ChatWidget.jsx`.
+- Deferred by user decision: complexity refactors (6 backend fns + 6 React components) — SKIPPED; localStorage→httpOnly-cookie auth migration — left as-is (working live auth, high regression risk).
+- False positive (no change): server.py desktop download route "`content` may be undefined" — the except branch raises, so content is always bound before use.
+
 ## Desktop App (2026-06, this session)
 - Added `/app/desktop/` Electron wrapper (main.js, preload.js, package.json) opening the web app in a branded desktop window. Icon built from user's Career Buddha logo (build/icon.png + icon.ico).
 - Windows x64 portable build produced via electron-builder `--dir` (ARM64 container cannot run wine, so NSIS installer / exe-icon embedding not possible locally; win-unpacked packed before the sign step).
