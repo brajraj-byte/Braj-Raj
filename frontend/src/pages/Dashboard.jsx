@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import { api, API } from "@/lib/api";
 import { Logo } from "@/components/Logo";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 import ParseResume from "@/components/tabs/ParseResume";
@@ -16,7 +16,7 @@ import AdminConsole from "@/components/tabs/AdminConsole";
 import ChatWidget from "@/components/ChatWidget";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown, ListChecks, Mail } from "lucide-react";
+import { FileText, Database, Building2, Target, ClipboardCheck, Search, Cake, Shield, LogOut, KeyRound, Circle, ChevronDown, ListChecks, Mail, MonitorDown } from "lucide-react";
 
 const TABS = [
   { key: "parse_resume", label: "Parse Resume", icon: FileText, comp: ParseResume },
@@ -60,6 +60,15 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           <Logo />
           <div className="flex items-center gap-3">
+            <a
+              href={`${API}/desktop/windows`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-orange-600 text-white hover:bg-orange-700 transition-colors shadow-sm"
+              data-testid="install-desktop-app-button"
+              title="Download the Career Buddha desktop app for Windows"
+            >
+              <MonitorDown className="h-4 w-4" />
+              <span className="hidden sm:inline">Install App</span>
+            </a>
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" data-testid="self-online-badge">
               <Circle className="h-2 w-2 fill-current text-emerald-500" /> Online
             </span>

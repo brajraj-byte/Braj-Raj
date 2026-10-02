@@ -35,4 +35,7 @@ Recruitment Tracking System for a recruitment agency. One admin console (owner e
 - Windows x64 portable build produced via electron-builder `--dir` (ARM64 container cannot run wine, so NSIS installer / exe-icon embedding not possible locally; win-unpacked packed before the sign step).
 - Backend download route `GET /api/desktop/windows` streams `/app/desktop/release/CareerBuddha360Suite-Windows.zip` (118 MB). Tested via curl (200, application/zip). Build artifacts gitignored.
 - `.github/workflows/build-windows.yml`: GitHub Actions on windows-latest to build the proper branded NSIS installer .exe (recommended polished option).
-- NOTE: main.js APP_URL currently points to PREVIEW url; must be repointed to PRODUCTION url and rebuilt once deployment completes.
+- NOTE: main.js APP_URL now points to PRODUCTION `https://careerbuddha.emergent.host`.
+- Desktop ZIP hosted in Emergent Object Storage (object path `desktop/CareerBuddha360Suite-Windows.zip`); route `GET /api/desktop/windows` streams it from storage (works in production). Upload script: `/app/scripts/upload_desktop_zip.py`.
+- Dashboard header has an "Install App" button (`install-desktop-app-button`) linking to the download. Requires a redeploy to appear in production.
+- electron-updater auto-update wired via `publish: github`; push `desktop-v*` tag to release.
